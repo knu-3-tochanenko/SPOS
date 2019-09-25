@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact name="SPOS Module 2:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/SPOS_Module_2_jar</output-path>
+    <root id="root">
+      <element id="archive" name="SPOS Module 2.jar">
+        <element id="module-output" name="SPOS Module 2" />
+      </element>
+      <element id="library" level="project" name="lab1" />
+    </root>
+  </artifact>
+</component>
