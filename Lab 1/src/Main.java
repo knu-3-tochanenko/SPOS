@@ -7,7 +7,7 @@ public class Main {
 
     private static void testFG() throws IOException, InterruptedException {
         ProcessBuilder processBuilderF =
-                new ProcessBuilder("java", "-jar", "f.jar", "2", "3000");
+                new ProcessBuilder("java", "-jar", "f.jar", "0", "3000");
         ProcessBuilder processBuilderG =
                 new ProcessBuilder("java", "-jar", "g.jar", "0", "10000");
         Process processF = processBuilderF.start();
