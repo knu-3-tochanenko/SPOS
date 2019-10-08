@@ -13,6 +13,7 @@ public class Main {
                 System.out.println("Functions calculated!");
                 System.exit(0);
             }
+
             if (!buttonListener.isAlive()) {
                 System.out.println("Interrupted by input!");
                 System.exit(0);
