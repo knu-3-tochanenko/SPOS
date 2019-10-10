@@ -1,15 +1,15 @@
 import java.util.Scanner;
 
-public class ButtonListener implements Runnable {
-    @Override
+public class ButtonListener implements Runnable{
     public void run() {
         Scanner s = new Scanner(System.in);
-        String ch = s.nextLine();
+        String ch;
         while (true) {
-            if (ch.charAt(0) == 'q')
+            ch = s.nextLine();
+            if (ch.charAt(0) == 'q') {
                 if (ConfirmDialog.run())
                     break;
-            ch = s.nextLine();
+            }
         }
     }
 }
