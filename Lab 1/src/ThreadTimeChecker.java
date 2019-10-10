@@ -1,5 +1,5 @@
 public class ThreadTimeChecker implements Runnable {
-    private static long TOO_LONG = 10_000;
+    private static long TOO_LONG = 60_000;
 
     @Override
     public void run() {
@@ -12,6 +12,6 @@ public class ThreadTimeChecker implements Runnable {
             }
         }
         if (System.currentTimeMillis() - time >= TOO_LONG)
-            System.exit(-1);
+            System.exit(-228);
     }
 }

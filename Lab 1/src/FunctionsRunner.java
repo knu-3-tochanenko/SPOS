@@ -1,6 +1,9 @@
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 
-public class FunctionsRunner implements Runnable {
+public class FunctionsRunner implements Callable<List<Integer>> {
     private int paramF, paramG, delayF, delayG;
 
     public FunctionsRunner(int paramF, int paramG, int delayF, int delayG) {
@@ -10,19 +13,16 @@ public class FunctionsRunner implements Runnable {
         this.delayG = delayG;
     }
 
-    private int resultF;
-    private int resultG;
-
-    @Override
-    public void run() {
-        runProcesses(paramF, paramG, delayF, delayG);
-    }
+    private int resultF = -2;
+    private int resultG = -2;
 
     public void runProcesses(int f, int g, int secondsF, int secondsG) {
         //find class path
-        String classPath = System.getProperty("java.class.path");
-        String[] classpathEntries = classPath.split(";");
-        String path = classpathEntries[0];
+//        String classPath = System.getProperty("java.class.path");
+//        String[] classpathEntries = classPath.split(";");
+//        String path = classpathEntries[0];
+
+        String path = "C:\\Workspace\\Repos\\knu-3\\SPOS\\Lab 1\\out\\production\\Lab 1 Lite\\";
 
         Thread buttonListener = new Thread(new ButtonListener());
         buttonListener.start();
@@ -79,7 +79,7 @@ public class FunctionsRunner implements Runnable {
             }
         }
         System.out.println("Functions calculated!");
-        System.exit(0);
+        //System.exit(0);
     }
 
     private static int getExitValue(Process process, String name) {
@@ -92,5 +92,14 @@ public class FunctionsRunner implements Runnable {
     private static void destroy(Process process, String name) {
         process.destroy();
         System.out.println("Destroyed " + name + " forcibly");
+    }
+
+    @Override
+    public List<Integer> call() {
+        runProcesses(paramF, paramG, delayF, delayG);
+        List<Integer> res = new ArrayList<>();
+        res.add(resultF);
+        res.add(resultG);
+        return res;
     }
 }
