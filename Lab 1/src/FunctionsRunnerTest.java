@@ -10,32 +10,36 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FunctionsRunnerTest {
 
-    private void testResult(int paramF, int paramG, int delayF, int delayG, int resultF, int resultG)
+    private List<Integer> testResult(int paramF, int paramG, int delayF, int delayG)
             throws ExecutionException, InterruptedException {
         ExecutorService executor = Executors.newCachedThreadPool();
         Future<List<Integer>> resultCall = executor.submit(new FunctionsRunner(paramF, paramG, delayF, delayG));
-        List<Integer> res = resultCall.get();
-        assertEquals(res.get(0), resultF);
-        assertEquals(res.get(1), resultG);
+        return resultCall.get();
     }
 
     @Test
     void test1() throws ExecutionException, InterruptedException {
-        testResult(0, 0, 2, 8, 3, 5);
+        List<Integer> res = testResult(0, 0, 2, 8);
+        assertEquals(res.get(0), 3);
+        assertEquals(res.get(1), 5);
     }
 
     @Test
     void test2() throws ExecutionException, InterruptedException {
-        testResult(4, 1, 8, 2, 3, 5);
+        List<Integer> res = testResult(4, 1, 8, 2);
+        assertEquals(res.get(0), 3);
+        assertEquals(res.get(1), 5);
     }
 
     @Test
     void test3() throws ExecutionException, InterruptedException {
-        testResult(2, 1, 4, 10, 0, -2);
+        List<Integer> res = testResult(2, 1, 4, 10);
+        assertEquals(res.get(0), 0);
     }
 
     @Test
     void test4() throws ExecutionException, InterruptedException {
-        testResult(1, 3, 4, 10, -2, 0);
+        List<Integer> res = testResult(1, 3, 4, 10);
+        assertEquals(res.get(1), 0);
     }
 }

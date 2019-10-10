@@ -28,10 +28,10 @@ public class FunctionsRunner implements Callable<List<Integer>> {
         buttonListener.start();
 
         ProcessBuilder processBuilderF =
-                new ProcessBuilder("java", "-cp", path, "FunctionF",
+                new ProcessBuilder("java", "-jar", "f.jar",
                         Integer.toString(f), Integer.toString(secondsF * 1000));
         ProcessBuilder processBuilderG =
-                new ProcessBuilder("java", "-cp", path, "FunctionG",
+                new ProcessBuilder("java", "-jar", "g.jar",
                         Integer.toString(g), Integer.toString(secondsG * 1000));
 
         Process processF = null;

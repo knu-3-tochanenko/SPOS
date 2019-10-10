@@ -12,6 +12,6 @@ public class ThreadTimeChecker implements Runnable {
             }
         }
         if (System.currentTimeMillis() - time >= TOO_LONG)
-            System.exit(-228);
+            System.exit(-1);
     }
 }
