@@ -96,6 +96,8 @@ public class FunctionsRunner implements Callable<List<Integer>> {
 //        Thread butt = new Thread(new ButtonListener());
 //        butt.start();
 
+        int resF, resG;
+
         while (true) {
 //            if (!butt.isAlive()) {
 //                System.out.println("Interrupted by input");
@@ -172,6 +174,7 @@ public class FunctionsRunner implements Callable<List<Integer>> {
         List<Integer> res = new ArrayList<>();
         res.add(resultF);
         res.add(resultG);
+        res.add(resultF * resultG);
         return res;
     }
 }
