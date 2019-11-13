@@ -5,9 +5,9 @@
 import java.util.Vector;
 import java.io.*;
 
-public class SchedulingAlgorithm {
+public class FirstComeFirstServed {
 
-	public static Results Run(int runtime, Vector processVector, Results result) {
+	public static Results run(int runtime, Vector processVector, Results result) {
 		int i = 0;
 		int comptime = 0;
 		int currentProcess = 0;

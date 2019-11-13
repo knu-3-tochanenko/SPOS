@@ -9,10 +9,6 @@
 
 import java.io.*;
 import java.util.*;
-import sProcess;
-import Common;
-import Results;
-import SchedulingAlgorithm;
 
 public class Scheduling {
 
@@ -120,7 +116,7 @@ public class Scheduling {
 				i++;
 			}
 		}
-		result = SchedulingAlgorithm.Run(runtime, processVector, result);
+		result = Lottery.run(runtime, processVector, result);
 		try {
 			// BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile));
 			PrintStream out = new PrintStream(new FileOutputStream(resultsFile));
