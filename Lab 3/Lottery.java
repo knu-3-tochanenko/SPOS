@@ -1,6 +1,7 @@
 import java.util.Random;
 import java.util.Vector;
 import java.io.*;
+import java.util.ArrayList;
 
 public class Lottery {
     public static Results run(int runtime, Vector processVector, Results result) {
@@ -33,18 +34,22 @@ public class Lottery {
 						out.close();
 						return result;
 					}
-					// for (i = size - 1; i >= 0; i--) {
-					// 	process = (sProcess) processVector.elementAt(i);
-					// 	if (process.cpudone < process.cputime) {
-					// 		currentProcess = i;
-					// 	}
-                    // }
+
+					ArrayList<Integer> list = new ArrayList<Integer>();
+					for (int j = 0; j < size; j++) {
+						process = (sProcess) processVector.elementAt(j);
+						if (process.cpudone < process.cputime)
+							list.add(j);
+					}
+
+					if (list.size() == 1)
+						continue;
                     
                     while (true) {
-                        int value = random.nextInt(size);
-                        process = (sProcess) processVector.elementAt(i);
+                        int value = random.nextInt(list.size());
+						process = (sProcess) processVector.elementAt(list.get(value));
                         if (process.cpudone < process.cputime) {
-                            currentProcess = value;
+                            currentProcess = list.get(value);
                             break;
                         }
                     }
@@ -60,22 +65,25 @@ public class Lottery {
 							+ process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
 					process.numblocked++;
 					process.ionext = 0;
-                    previousProcess = currentProcess;
-                    
+					previousProcess = currentProcess;
+					
+					
+					ArrayList<Integer> list = new ArrayList<Integer>();
+					for (int j = 0; j < size; j++) {
+						process = (sProcess) processVector.elementAt(j);
+						if (process.cpudone < process.cputime)
+							list.add(j);
+					}
 
-					// for (i = size - 1; i >= 0; i--) {
-					// 	process = (sProcess) processVector.elementAt(i);
-					// 	if (process.cpudone < process.cputime && previousProcess != i) {
-					// 		currentProcess = i;
-					// 	}
-                    // }
+					if (list.size() == 1)
+						continue;
 
                     while (true) {
-                        int value = random.nextInt(size);
-                        process = (sProcess) processVector.elementAt(i);
+                        int value = random.nextInt(list.size());
+						process = (sProcess) processVector.elementAt(list.get(value));
                         if (process.cpudone < process.cputime && previousProcess != value) {
-                            currentProcess = value;
-                            break;
+							currentProcess = list.get(value);
+							break;
                         }
                     }
                     
