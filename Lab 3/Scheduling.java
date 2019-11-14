@@ -57,7 +57,7 @@ public class Scheduling {
 					}
 					X = X * standardDev;
 					cputime = (int) X + meanDev;
-					processVector.addElement(new sProcess(cputime, ioblocking, 0, 0, 0));
+					processVector.addElement(new SchedulingProcess(cputime, ioblocking, 0, 0, 0));
 				}
 				if (line.startsWith("runtime")) {
 					StringTokenizer st = new StringTokenizer(line);
@@ -78,7 +78,7 @@ public class Scheduling {
 		System.out.println("standdev " + standardDev);
 		int size = processVector.size();
 		for (i = 0; i < size; i++) {
-			sProcess process = (sProcess) processVector.elementAt(i);
+			SchedulingProcess process = (SchedulingProcess) processVector.elementAt(i);
 			System.out.println("process " + i + " " + process.cputime + " " + process.ioblocking + " " + process.cpudone
 					+ " " + process.numblocked);
 		}
@@ -112,7 +112,7 @@ public class Scheduling {
 				}
 				X = X * standardDev;
 				int cputime = (int) X + meanDev;
-				processVector.addElement(new sProcess(cputime, i * 100, 0, 0, 0));
+				processVector.addElement(new SchedulingProcess(cputime, i * 100, 0, 0, 0));
 				i++;
 			}
 		}
@@ -127,7 +127,7 @@ public class Scheduling {
 			out.println("Standard Deviation: " + standardDev);
 			out.println("Process #\tCPU Time\tIO Blocking\tCPU Completed\tCPU Blocked");
 			for (i = 0; i < processVector.size(); i++) {
-				sProcess process = (sProcess) processVector.elementAt(i);
+				SchedulingProcess process = (SchedulingProcess) processVector.elementAt(i);
 				out.print(Integer.toString(i));
 				if (i < 100) {
 					out.print("\t\t");

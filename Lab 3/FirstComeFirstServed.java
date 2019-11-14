@@ -22,7 +22,7 @@ public class FirstComeFirstServed {
 			// BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile));
 			// OutputStream out = new FileOutputStream(resultsFile);
 			PrintStream out = new PrintStream(new FileOutputStream(resultsFile));
-			sProcess process = (sProcess) processVector.elementAt(currentProcess);
+			SchedulingProcess process = (SchedulingProcess) processVector.elementAt(currentProcess);
 			out.println("Process: " + currentProcess + " registered... (" + process.cputime + " " + process.ioblocking
 					+ " " + process.cpudone + " " + process.cpudone + ")");
 			while (comptime < runtime) {
@@ -36,12 +36,12 @@ public class FirstComeFirstServed {
 						return result;
 					}
 					for (i = size - 1; i >= 0; i--) {
-						process = (sProcess) processVector.elementAt(i);
+						process = (SchedulingProcess) processVector.elementAt(i);
 						if (process.cpudone < process.cputime) {
 							currentProcess = i;
 						}
 					}
-					process = (sProcess) processVector.elementAt(currentProcess);
+					process = (SchedulingProcess) processVector.elementAt(currentProcess);
 					out.println("Process: " + currentProcess + " registered... (" + process.cputime + " "
 							+ process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
 				}
@@ -52,12 +52,12 @@ public class FirstComeFirstServed {
 					process.ionext = 0;
 					previousProcess = currentProcess;
 					for (i = size - 1; i >= 0; i--) {
-						process = (sProcess) processVector.elementAt(i);
+						process = (SchedulingProcess) processVector.elementAt(i);
 						if (process.cpudone < process.cputime && previousProcess != i) {
 							currentProcess = i;
 						}
 					}
-					process = (sProcess) processVector.elementAt(currentProcess);
+					process = (SchedulingProcess) processVector.elementAt(currentProcess);
 					out.println("Process: " + currentProcess + " registered... (" + process.cputime + " "
 							+ process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
 				}

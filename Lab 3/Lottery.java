@@ -21,7 +21,7 @@ public class Lottery {
 			// BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile));
 			// OutputStream out = new FileOutputStream(resultsFile);
 			PrintStream out = new PrintStream(new FileOutputStream(resultsFile));
-			sProcess process = (sProcess) processVector.elementAt(currentProcess);
+			SchedulingProcess process = (SchedulingProcess) processVector.elementAt(currentProcess);
 			out.println("Process: " + currentProcess + " registered... (" + process.cputime + " " + process.ioblocking
 					+ " " + process.cpudone + " " + process.cpudone + ")");
 			while (comptime < runtime) {
@@ -37,7 +37,7 @@ public class Lottery {
 
 					ArrayList<Integer> list = new ArrayList<Integer>();
 					for (int j = 0; j < size; j++) {
-						process = (sProcess) processVector.elementAt(j);
+						process = (SchedulingProcess) processVector.elementAt(j);
 						if (process.cpudone < process.cputime)
 							list.add(j);
 					}
@@ -47,7 +47,7 @@ public class Lottery {
                     
                     while (true) {
                         int value = random.nextInt(list.size());
-						process = (sProcess) processVector.elementAt(list.get(value));
+						process = (SchedulingProcess) processVector.elementAt(list.get(value));
                         if (process.cpudone < process.cputime) {
                             currentProcess = list.get(value);
                             break;
@@ -56,7 +56,7 @@ public class Lottery {
 
                     ///////////////////////////////////////////////////////
 
-					process = (sProcess) processVector.elementAt(currentProcess);
+					process = (SchedulingProcess) processVector.elementAt(currentProcess);
 					out.println("Process: " + currentProcess + " registered... (" + process.cputime + " "
 							+ process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
 				}
@@ -70,7 +70,7 @@ public class Lottery {
 					
 					ArrayList<Integer> list = new ArrayList<Integer>();
 					for (int j = 0; j < size; j++) {
-						process = (sProcess) processVector.elementAt(j);
+						process = (SchedulingProcess) processVector.elementAt(j);
 						if (process.cpudone < process.cputime)
 							list.add(j);
 					}
@@ -80,7 +80,7 @@ public class Lottery {
 
                     while (true) {
                         int value = random.nextInt(list.size());
-						process = (sProcess) processVector.elementAt(list.get(value));
+						process = (SchedulingProcess) processVector.elementAt(list.get(value));
                         if (process.cpudone < process.cputime && previousProcess != value) {
 							currentProcess = list.get(value);
 							break;
@@ -88,7 +88,7 @@ public class Lottery {
                     }
                     
 
-					process = (sProcess) processVector.elementAt(currentProcess);
+					process = (SchedulingProcess) processVector.elementAt(currentProcess);
 					out.println("Process: " + currentProcess + " registered... (" + process.cputime + " "
 							+ process.ioblocking + " " + process.cpudone + " " + process.cpudone + ")");
 				}
