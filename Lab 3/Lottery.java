@@ -1,19 +1,20 @@
 import java.util.Random;
 import java.util.Vector;
+
 import java.io.*;
 import java.util.ArrayList;
 
 public class Lottery {
-    public static Results run(int runtime, Vector processVector, Results result) {
-        int i = 0;
+	public static Results run(int runtime, Vector processVector, Results result) {
+		int i = 0;
 		int comptime = 0;
 		int currentProcess = 0;
 		int previousProcess = 0;
 		int size = processVector.size();
 		int completed = 0;
-        String resultsFile = "Summary-Processes";
-        
-        Random random = new Random();
+		String resultsFile = "Summary-Processes";
+
+		Random random = new Random();
 
 		result.schedulingType = "Batch (Nonpreemptive)";
 		result.schedulingName = "Lottery";
@@ -35,26 +36,9 @@ public class Lottery {
 						return result;
 					}
 
-					ArrayList<Integer> list = new ArrayList<Integer>();
-					for (int j = 0; j < size; j++) {
-						process = (SchedulingProcess) processVector.elementAt(j);
-						if (process.cpudone < process.cputime)
-							list.add(j);
-					}
+					currentProcess = getNextProcess(size, processVector, random, previousProcess, currentProcess, false);
 
-					if (list.size() == 1)
-						continue;
-                    
-                    while (true) {
-                        int value = random.nextInt(list.size());
-						process = (SchedulingProcess) processVector.elementAt(list.get(value));
-                        if (process.cpudone < process.cputime) {
-                            currentProcess = list.get(value);
-                            break;
-                        }
-                    }
-
-                    ///////////////////////////////////////////////////////
+					///////////////////////////////////////////////////////
 
 					process = (SchedulingProcess) processVector.elementAt(currentProcess);
 					out.println("Process: " + currentProcess + " registered... (" + process.cputime + " "
@@ -66,27 +50,8 @@ public class Lottery {
 					process.numblocked++;
 					process.ionext = 0;
 					previousProcess = currentProcess;
-					
-					
-					ArrayList<Integer> list = new ArrayList<Integer>();
-					for (int j = 0; j < size; j++) {
-						process = (SchedulingProcess) processVector.elementAt(j);
-						if (process.cpudone < process.cputime)
-							list.add(j);
-					}
 
-					if (list.size() == 1)
-						continue;
-
-                    while (true) {
-                        int value = random.nextInt(list.size());
-						process = (SchedulingProcess) processVector.elementAt(list.get(value));
-                        if (process.cpudone < process.cputime && previousProcess != value) {
-							currentProcess = list.get(value);
-							break;
-                        }
-                    }
-                    
+					currentProcess = getNextProcess(size, processVector, random, previousProcess, currentProcess, true);
 
 					process = (SchedulingProcess) processVector.elementAt(currentProcess);
 					out.println("Process: " + currentProcess + " registered... (" + process.cputime + " "
@@ -103,5 +68,27 @@ public class Lottery {
 			/* Handle exceptions */ }
 		result.compuTime = comptime;
 		return result;
-    }
+	}
+
+	// Gets new item based on random values
+	private static int getNextProcess(int size, Vector<SchedulingProcess> processVector, Random random,
+			int previousProcess, int currentProcess, boolean checkForPrev) {
+		SchedulingProcess process;
+		ArrayList<Integer> list = new ArrayList<Integer>();
+		for (int j = 0; j < size; j++) {
+			process = (SchedulingProcess) processVector.elementAt(j);
+			if (process.cpudone < process.cputime)
+				list.add(j);
+		}
+
+		while (true) {
+			int value = random.nextInt(list.size());
+			process = (SchedulingProcess) processVector.elementAt(list.get(value));
+			if (process.cpudone < process.cputime && ((checkForPrev) ? previousProcess != value : true)) {
+				currentProcess = list.get(value);
+				break;
+			}
+		}
+		return currentProcess;
+	}
 }

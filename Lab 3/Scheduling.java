@@ -130,9 +130,9 @@ public class Scheduling {
 				SchedulingProcess process = (SchedulingProcess) processVector.elementAt(i);
 				out.print(Integer.toString(i));
 				if (i < 100) {
-					out.print("\t\t");
+					out.print("\t\t\t");
 				} else {
-					out.print("\t");
+					out.print("\t\t");
 				}
 				out.print(Integer.toString(process.cputime));
 				if (process.cputime < 100) {
