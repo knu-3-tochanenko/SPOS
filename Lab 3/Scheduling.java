@@ -116,7 +116,7 @@ public class Scheduling {
 				i++;
 			}
 		}
-		result = Lottery.run(runtime, processVector, result);
+		result = Lottery.run(runtime, processVector, result, "Summary-Processes");
 		try {
 			// BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile));
 			PrintStream out = new PrintStream(new FileOutputStream(resultsFile));

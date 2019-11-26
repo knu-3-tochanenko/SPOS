@@ -5,14 +5,13 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class Lottery {
-	public static Results run(int runtime, Vector processVector, Results result) {
+	public static Results run(int runtime, Vector processVector, Results result, String resultsFile) {
 		int i = 0;
 		int comptime = 0;
 		int currentProcess = 0;
 		int previousProcess = 0;
 		int size = processVector.size();
 		int completed = 0;
-		String resultsFile = "Summary-Processes";
 
 		Random random = new Random();
 
