@@ -43,11 +43,11 @@ public class FirstComeFirstServed {
 					}
 					process = (SchedulingProcess) processVector.elementAt(currentProcess);
 					out.println("Process: " + currentProcess + " registered... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + " " + process.getCpudone() + ")");
+							+ process.getIoblocking() + " " + process.getCpudone() + ")");
 				}
 				if (process.getIoblocking() == process.getIonext()) {
 					out.println("Process: " + currentProcess + " I/O blocked... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + " " + process.getCpudone() + ")");
+							+ process.getIoblocking() + " " + process.getCpudone() + ")");
 					process.increaseNumblocked();
 					process.setIonext(0);
 					previousProcess = currentProcess;
@@ -59,7 +59,7 @@ public class FirstComeFirstServed {
 					}
 					process = (SchedulingProcess) processVector.elementAt(currentProcess);
 					out.println("Process: " + currentProcess + " registered... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + " " + process.getCpudone() + ")");
+							+ process.getIoblocking() + " " + process.getCpudone() + ")");
 				}
 				process.increaseCpudone();
 				if (process.getIoblocking() > 0) {

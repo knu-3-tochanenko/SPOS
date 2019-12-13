@@ -4,13 +4,15 @@ public class SchedulingProcess {
 	private int cpudone;
 	private int ionext;
 	private int numblocked;
+	private int priority;
 
-	public SchedulingProcess(int cputime, int ioblocking, int cpudone, int ionext, int numblocked) {
+	public SchedulingProcess(int cputime, int ioblocking, int cpudone, int ionext, int numblocked, int priority) {
 		this.cputime = cputime;
 		this.ioblocking = ioblocking;
 		this.cpudone = cpudone;
 		this.ionext = ionext;
 		this.numblocked = numblocked;
+		this.priority = priority;
 	}
 
 	public int getCputime() {
@@ -31,6 +33,10 @@ public class SchedulingProcess {
 
 	public int getNumblocked() {
 		return numblocked;
+	}
+
+	public int getPriority() {
+		return priority;
 	}
 
 	public void addCpudone(int time) {

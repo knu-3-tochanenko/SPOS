@@ -3,6 +3,9 @@ import java.util.Vector;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Lottery {
 	public static Results run(int runtime, Vector processVector, Results result, String resultsFile) {
@@ -23,12 +26,13 @@ public class Lottery {
 			PrintStream out = new PrintStream(new FileOutputStream(resultsFile));
 			SchedulingProcess process = (SchedulingProcess) processVector.elementAt(currentProcess);
 			out.println("Process: " + currentProcess + " registered... (" + process.getCputime() + " "
-					+ process.getIoblocking() + " " + process.getCpudone() + " " + process.getCpudone() + ")");
+					+ process.getIoblocking() + " " + process.getCpudone() + ")");
 			while (comptime < runtime) {
 				if (process.getCpudone() == process.getCputime()) {
 					completed++;
+					System.out.println("Completed : " + completed);
 					out.println("Process: " + currentProcess + " completed... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + " " + process.getCpudone() + ")");
+							+ process.getIoblocking() + " " + process.getCpudone() + ")");
 					if (completed == size) {
 						result.compuTime = comptime;
 						out.close();
@@ -42,11 +46,11 @@ public class Lottery {
 
 					process = (SchedulingProcess) processVector.elementAt(currentProcess);
 					out.println("Process: " + currentProcess + " registered... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + " " + process.getCpudone() + ")");
+							+ process.getIoblocking() + " " + process.getCpudone() + " " + ")");
 				}
 				if (process.getIoblocking() == process.getIonext()) {
 					out.println("Process: " + currentProcess + " I/O blocked... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + " " + process.getCpudone() + ")");
+							+ process.getIoblocking() + " " + process.getCpudone() + " " + ")");
 					process.increaseNumblocked();
 					process.setIonext(0);
 					previousProcess = currentProcess;
@@ -55,7 +59,7 @@ public class Lottery {
 
 					process = (SchedulingProcess) processVector.elementAt(currentProcess);
 					out.println("Process: " + currentProcess + " registered... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + " " + process.getCpudone() + ")");
+							+ process.getIoblocking() + " " + process.getCpudone() + " " + ")");
 				}
 				process.increaseCpudone();
 				if (process.getIoblocking() > 0) {
@@ -74,17 +78,24 @@ public class Lottery {
 	private static int getNextProcess(int size, Vector<SchedulingProcess> processVector, Random random,
 			int previousProcess, int currentProcess, boolean checkForPrev) {
 		SchedulingProcess process;
-		ArrayList<Integer> list = new ArrayList<Integer>();
+		List<Integer> list = new ArrayList<>();
+		int currentProcessesNumber = 0;
 		for (int j = 0; j < size; j++) {
 			process = (SchedulingProcess) processVector.elementAt(j);
-			if (process.getCpudone() < process.getCputime())
-				list.add(j);
+			if (process.getCpudone() < process.getCputime()) {
+				currentProcessesNumber++;
+				System.out.println(j + " : " + process.getCpudone() + " of " + process.getCputime());
+				for (int k = 0; k < process.getPriority(); k++)
+					list.add(j);
+			}
+		}
+
+		if (currentProcessesNumber == 1) {
+			System.out.println("wow ---- " + currentProcessesNumber);
+			return currentProcess;
 		}
 
 		while (true) {
-			if (list.size() == 1)
-				return currentProcess;
-
 			int value = random.nextInt(list.size());
 			process = (SchedulingProcess) processVector.elementAt(list.get(value));
 			if (process.getCpudone() < process.getCputime() && ((checkForPrev) ? previousProcess != value : true)) {

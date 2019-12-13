@@ -20,6 +20,9 @@ public class Scheduling {
 	private static Results result = new Results("null", "null", 0);
 	private static String resultsFile = "Summary-Results";
 
+	private static final int MAX_PRIORITY = 10;
+	private static final Random random = new Random(System.currentTimeMillis());
+
 	private static void Init(String file) {
 		File f = new File(file);
 		String line;
@@ -57,7 +60,7 @@ public class Scheduling {
 					}
 					X = X * standardDev;
 					cputime = (int) X + meanDev;
-					processVector.addElement(new SchedulingProcess(cputime, ioblocking, 0, 0, 0));
+					processVector.addElement(new SchedulingProcess(cputime, ioblocking, 0, 0, 0, random.nextInt(MAX_PRIORITY) + 1));
 				}
 				if (line.startsWith("runtime")) {
 					StringTokenizer st = new StringTokenizer(line);
@@ -112,7 +115,7 @@ public class Scheduling {
 				}
 				X = X * standardDev;
 				int cputime = (int) X + meanDev;
-				processVector.addElement(new SchedulingProcess(cputime, i * 100, 0, 0, 0));
+				processVector.addElement(new SchedulingProcess(cputime, i * 100, 0, 0, 0, random.nextInt(MAX_PRIORITY) + 1));
 				i++;
 			}
 		}
@@ -125,7 +128,7 @@ public class Scheduling {
 			out.println("Simulation Run Time: " + result.compuTime);
 			out.println("Mean: " + meanDev);
 			out.println("Standard Deviation: " + standardDev);
-			out.println("Process #\tCPU Time\tIO Blocking\tCPU Completed\tCPU Blocked");
+			out.println("Process #\tCPU Time\tIO Blocking\tCPU Completed\tCPU Blocked\tPriority");
 			for (i = 0; i < processVector.size(); i++) {
 				SchedulingProcess process = (SchedulingProcess) processVector.elementAt(i);
 				out.print(Integer.toString(i));
@@ -152,7 +155,10 @@ public class Scheduling {
 				} else {
 					out.print(" (ms)\t");
 				}
-				out.println(process.getNumblocked() + " times");
+				out.print("\t" + process.getNumblocked() + " times");
+				if (process.getNumblocked() < 10)
+					out.print("\t");
+				out.println("\t" + process.getPriority());
 			}
 			out.close();
 		} catch (IOException e) {
