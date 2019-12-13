@@ -158,7 +158,8 @@ public class Scheduling {
 				out.print("\t" + process.getNumblocked() + " times");
 				if (process.getNumblocked() < 10)
 					out.print("\t");
-				out.println("\t" + process.getPriority());
+				out.print("\t" + process.getPriority());
+				out.println((process.getCpudone() > process.getCputime() ? "\t\tERROR" : ""));
 			}
 			out.close();
 		} catch (IOException e) {

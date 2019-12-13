@@ -25,32 +25,29 @@ public class Lottery {
 			// OutputStream out = new FileOutputStream(resultsFile);
 			PrintStream out = new PrintStream(new FileOutputStream(resultsFile));
 			SchedulingProcess process = (SchedulingProcess) processVector.elementAt(currentProcess);
-			out.println("Process: " + currentProcess + " registered... (" + process.getCputime() + " "
-					+ process.getIoblocking() + " " + process.getCpudone() + ")");
+			printProcess(currentProcess, process, "Registered", out);
 			while (comptime < runtime) {
 				if (process.getCpudone() == process.getCputime()) {
 					completed++;
-					System.out.println("Completed : " + completed);
-					out.println("Process: " + currentProcess + " completed... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + ")");
+					printProcess(currentProcess, process, "Completed", out);
+
 					if (completed == size) {
 						result.compuTime = comptime;
 						out.close();
 						return result;
 					}
 
-					currentProcess = getNextProcess(size, processVector, random, previousProcess, currentProcess,
-							false);
+					previousProcess = currentProcess;
+
+					currentProcess = getNextProcess(size, processVector, random, previousProcess, currentProcess, false);
 
 					///////////////////////////////////////////////////////
 
 					process = (SchedulingProcess) processVector.elementAt(currentProcess);
-					out.println("Process: " + currentProcess + " registered... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + " " + ")");
+					printProcess(currentProcess, process, "Registered", out);
 				}
 				if (process.getIoblocking() == process.getIonext()) {
-					out.println("Process: " + currentProcess + " I/O blocked... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + " " + ")");
+					printProcess(currentProcess, process, "I/O blocked", out);
 					process.increaseNumblocked();
 					process.setIonext(0);
 					previousProcess = currentProcess;
@@ -58,8 +55,7 @@ public class Lottery {
 					currentProcess = getNextProcess(size, processVector, random, previousProcess, currentProcess, true);
 
 					process = (SchedulingProcess) processVector.elementAt(currentProcess);
-					out.println("Process: " + currentProcess + " registered... (" + process.getCputime() + " "
-							+ process.getIoblocking() + " " + process.getCpudone() + " " + ")");
+					printProcess(currentProcess, process, "Registered", out);
 				}
 				process.increaseCpudone();
 				if (process.getIoblocking() > 0) {
@@ -74,6 +70,12 @@ public class Lottery {
 		return result;
 	}
 
+	private static void printProcess(int id, SchedulingProcess process, String action, PrintStream out) {
+		out.println("Process: " + id + " " + action + "...  \t( " + process.getCputime() + " "
+							+ process.getIoblocking() + " " + process.getCpudone() + " " + ")"
+							+ (process.getCpudone() > process.getCputime() ? "\t\tERROR" : ""));
+	}
+
 	// Gets new item based on random values
 	private static int getNextProcess(int size, Vector<SchedulingProcess> processVector, Random random,
 			int previousProcess, int currentProcess, boolean checkForPrev) {
@@ -84,16 +86,13 @@ public class Lottery {
 			process = (SchedulingProcess) processVector.elementAt(j);
 			if (process.getCpudone() < process.getCputime()) {
 				currentProcessesNumber++;
-				System.out.println(j + " : " + process.getCpudone() + " of " + process.getCputime());
 				for (int k = 0; k < process.getPriority(); k++)
 					list.add(j);
 			}
 		}
 
-		if (currentProcessesNumber == 1) {
-			System.out.println("wow ---- " + currentProcessesNumber);
-			return currentProcess;
-		}
+		if (currentProcessesNumber == 1)
+			return list.get(0);
 
 		while (true) {
 			int value = random.nextInt(list.size());
