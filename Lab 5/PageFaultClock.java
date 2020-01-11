@@ -58,14 +58,16 @@ public class PageFaultClock {
 		}
 
 		Page subPage;
-		for (int i = 0; i < mem.size(); i++) {
-			subPage = (Page) mem.elementAt(i);
-			if (!subPage.secondChance && subPage.physical != -1) {
-				removePage(mem, i, replacePageNum, controlPanel);
-				subPage.secondChance = true;
-				return;
-			} else
-				subPage.secondChance = false;
+		while (true) {
+			for (int i = 0; i < mem.size(); i++) {
+				subPage = (Page) mem.elementAt(i);
+				if (!subPage.secondChance && subPage.physical != -1) {
+					removePage(mem, i, replacePageNum, controlPanel);
+					subPage.secondChance = true;
+					return;
+				} else
+					subPage.secondChance = false;
+			}
 		}
 	}
 
