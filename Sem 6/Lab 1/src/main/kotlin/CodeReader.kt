@@ -1,6 +1,7 @@
 import java.io.BufferedReader
 import java.io.FileInputStream
 import java.io.InputStreamReader
+import java.lang.IllegalArgumentException
 
 class CodeReader(fileName: String) {
 
@@ -33,5 +34,11 @@ class CodeReader(fileName: String) {
             return '\n'
         }
         return line!![current++]
+    }
+
+    fun stepBack() {
+        if (current == 0)
+            throw IllegalArgumentException("You can't step back from the start of the line")
+        current--
     }
 }
