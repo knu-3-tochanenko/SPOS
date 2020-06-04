@@ -7,4 +7,6 @@ fun main() {
         print(char)
         char = reader.next()
     }
+
+    println(Token("hello", Token.Type.COMMENT))
 }
