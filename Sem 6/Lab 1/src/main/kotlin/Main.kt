@@ -1,3 +1,10 @@
 fun main() {
-    println("It works!")
+    val reader = CodeReader("text.txt")
+
+    var char = reader.next()
+
+    while (char != 0.toChar()) {
+        print(char)
+        char = reader.next()
+    }
 }
