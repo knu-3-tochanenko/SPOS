@@ -4,6 +4,7 @@ fun main() {
 
     val wrapper = LexerWrapper(lexer.tokens)
 
-    wrapper.printToConsole()
-    wrapper.printTokens()
+    wrapper.printToConsoleWrapped()
+//    wrapper.printTokens()
+//    wrapper.printSorted()
 }

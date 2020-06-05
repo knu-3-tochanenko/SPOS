@@ -12,6 +12,10 @@ class Lexer(fileName: String) {
         buffer.append(c)
     }
 
+    private fun justGo(state: Int) {
+        this.state = state
+    }
+
     private fun addToken(type: Token.Type) {
         tokens.add(Token(buffer.toString(), type))
         buffer.clear()
@@ -86,6 +90,28 @@ class Lexer(fileName: String) {
                 // Identifiers
                 100 -> identifier(c)
 
+                // Number Literals
+                101 -> zeroDigit(c)
+                102 -> binaryDigits(c)
+                103 -> octalDigits(c)
+                104 -> hexDigits(c)
+                105 -> decimalDigits(c)
+                106 -> decimalWithDot(c)
+                107 -> decimalWithDotAndDecimals(c)
+                108 -> decimalWithE(c)
+                109 -> floatDecimalWithSign(c)
+                110 -> floatDecimal(c)
+                111 -> hexAndDot(c)
+                112 -> hexFloat(c)
+                113 -> hexAndP(c)
+                114 -> hexAndPAndHex(c)
+                115 -> hexAndPAndSymbol(c)
+                116 -> hexDigitsFull(c)
+                117 -> octalDigitsFull(c)
+                118 -> binaryDigitsFull(c)
+                119 -> floatLiteral(c)
+                120 -> integerLiteral(c)
+
                 // String Literals
                 200 -> rawString(c)
                 202 -> rawStringOne(c)
@@ -127,7 +153,6 @@ class Lexer(fileName: String) {
      * Error State
      */
     private fun errorState(c: Char) {
-        // TODO
         reader.stepBack()
         addToken(Token.Type.ERROR)
     }
@@ -141,11 +166,12 @@ class Lexer(fileName: String) {
         // TODO
         when {
             Character.isWhitespace(c) -> {
-//                addToken(Token.Type.WHITESPACE)
                 tokens.add(Token(c.toString(), Token.Type.WHITESPACE))
                 buffer.clear()
                 state = 0
             }
+            c == '0' -> goto(101, c)
+            isDecimal(c) && c != '0' -> goto(105, c)
             c == '.' -> {
                 tokens.add(Token(c.toString(), Token.Type.OPERATOR))
                 buffer.clear()
@@ -187,15 +213,260 @@ class Lexer(fileName: String) {
         when {
             isPartOfIdentifier(c) -> goto(100, c)
             Character.isWhitespace(c) || isOperator(c) || isSeparator(c) -> {
-                if (isPrimitive(buffer.toString()))
-                    addToken(Token.Type.PRIMITIVE)
-                else if (isKeyword(buffer.toString()))
-                    addToken(Token.Type.KEYWORD)
-                else addToken(Token.Type.IDENTIFIER)
+                when {
+                    isNil(buffer.toString()) -> addToken(Token.Type.LITERAL_NULL)
+                    isBoolean(buffer.toString()) -> addToken(Token.Type.LITERAL_BOOLEAN)
+                    isPrimitive(buffer.toString()) -> addToken(Token.Type.PRIMITIVE)
+                    isKeyword(buffer.toString()) -> addToken(Token.Type.KEYWORD)
+                    else -> addToken(Token.Type.IDENTIFIER)
+                }
                 reader.stepBack()
             }
             else -> goto(-1, c)
         }
+    }
+
+    /**
+     * STATE 101
+     * 0 in buffer
+     */
+    private fun zeroDigit(c: Char) {
+        when {
+            c == 'b' -> goto(102, c)
+            c == 'o' -> goto(103, c)
+            c == 'x' -> goto(104, c)
+            c == '.' -> goto(106, c)
+            isDecimal(c) -> goto(105, c)
+            isOperator(c) || isSeparator(c) || c == ' ' -> goto(120, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 102
+     * 0b in buffer
+     */
+    private fun binaryDigits(c: Char) {
+        when {
+            c == '0' || c == '1' -> goto(118, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 103
+     * 0o in buffer
+     */
+    private fun octalDigits(c: Char) {
+        when {
+            isOctal(c) -> goto(117, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 104
+     * 0x in buffer
+     */
+    private fun hexDigits(c: Char) {
+        when {
+            isHex(c) -> goto(116, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 105
+     * 0..9 in buffer
+     */
+    private fun decimalDigits(c: Char) {
+        when {
+            isDecimal(c) -> goto(105, c)
+            c == '.' -> goto(106, c)
+            isOperator(c) || isSeparator(c) || c == ' ' -> goto(120, c)
+            c == 'e' || c == 'E' -> goto(108, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 106
+     * 0..9. in buffer
+     */
+    private fun decimalWithDot(c: Char) {
+        when {
+            isDecimal(c) -> goto(107, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 107
+     * 0..9.0..9 in buffer
+     */
+    private fun decimalWithDotAndDecimals(c: Char) {
+        when {
+            isDecimal(c) -> goto(107, c)
+            isOperator(c) || isSeparator(c) || c == ' ' -> goto(119, c)
+            c == 'e' || c == 'E' -> goto(108, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 108
+     * decimal with e in buffer
+     */
+    private fun decimalWithE(c: Char) {
+        when {
+            isDecimal(c) -> goto(110, c)
+            c == '+' || c == '-' -> goto(109, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 109
+     * float decimal with something in buffer
+     */
+    private fun floatDecimalWithSign(c: Char) {
+        when {
+            isDecimal(c) -> goto(110, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 110
+     * float decimal in buffer
+     */
+    private fun floatDecimal(c: Char) {
+        when {
+            isDecimal(c) -> goto(110, c)
+            isOperator(c) || isSeparator(c) || c == ' ' -> goto(119, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 111
+     * 0x.. . in buffer
+     */
+    private fun hexAndDot(c: Char) {
+        when {
+            isHex(c) -> goto(112, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 112
+     * 0x... . . in buffer
+     */
+    private fun hexFloat(c: Char) {
+        when {
+            c == 'p' || c == 'P' -> goto(113, c)
+            isOperator(c) || isSeparator(c) || c == ' ' -> goto(119, c)
+            isHex(c) -> goto(112, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 113
+     * 0x.. . .. pP in buffer
+     */
+    private fun hexAndP(c: Char) {
+        when {
+            c == '+' || c == '-' -> goto(115, c)
+            isHex(c) -> goto(114, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 114
+     * 0x.. . .. pP in buffer
+     */
+    private fun hexAndPAndHex(c: Char) {
+        when {
+            isHex(c) -> goto(114, c)
+            isOperator(c) || isSeparator(c) || c == ' ' -> goto(119, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 115
+     * 0x.. . .. pP+-.. in buffer
+     */
+    private fun hexAndPAndSymbol(c: Char) {
+        when {
+            isHex(c) -> goto(114, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 116
+     * 0x.. in buffer
+     */
+    private fun hexDigitsFull(c: Char) {
+        when {
+            isHex(c) -> goto(116, c)
+            c == '.' -> goto(111, c)
+            c == 'p' || c == 'P' -> goto(113, c)
+            isOperator(c) || isSeparator(c) || c == ' ' -> goto(119, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 117
+     * 0o.. in buffer
+     */
+    private fun octalDigitsFull(c: Char) {
+        when {
+            isOctal(c) -> goto(117, c)
+            isOperator(c) || isSeparator(c) || c == ' ' -> goto(120, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 118
+     * 0b.. in buffer
+     */
+    private fun binaryDigitsFull(c: Char) {
+        when {
+            c == '0' || c == '1' -> goto(118, c)
+            isOperator(c) || isSeparator(c) || c == ' ' -> goto(120, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 119
+     * FLOAT LITERAL
+     */
+    private fun floatLiteral(c: Char) {
+        reader.stepBack()
+        reader.stepBack()
+        tokens.add(Token(buffer.toString().substring(0, buffer.length), Token.Type.LITERAL_FLOAT))
+        buffer.clear()
+        state = 0
+    }
+
+    /**
+     * STATE 120
+     * INTEGER LITERAL
+     */
+    private fun integerLiteral(c: Char) {
+        reader.stepBack()
+        reader.stepBack()
+        tokens.add(Token(buffer.toString().substring(0, buffer.length - 1), Token.Type.LITERAL_INT))
+        buffer.clear()
+        state = 0
     }
 
     /**

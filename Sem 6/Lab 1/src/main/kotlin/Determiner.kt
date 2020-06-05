@@ -27,7 +27,11 @@ fun isBinary(c: Char) = c == '0' || c == '1'
 
 fun isHex(c: Char) = Pattern.matches("\\d|[a-fA-F]", c.toString())
 
-fun isFloat(c: Char) = c == 'f' || c == 'F' || c == 'd' || c == 'D'
+fun isDecimal(c: Char) = Pattern.matches("[0-9]", c.toString())
+
+fun isNil(word: String) = word == "nil"
+
+fun isBoolean(word: String) = word == "true" || word == "false"
 
 private val keywords = listOf(
     "associatedtype",
