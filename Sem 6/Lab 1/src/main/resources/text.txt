@@ -2,6 +2,24 @@
   #error("This framework requires UIKit!")
 #endif
 
+'a' '\'
+
+'\''
+
+'"'
+
+"'"
+
+"\'"
+
+"\" wow \""
+"""
+gfdf
+ df dfg fd
+  ""\""
+  dfg
+"""
+
 /*Copyright (c) 2016, Andrew Walz.
 
  Redistribution and use in source and binary forms, with or without modification,are permitted provided that the following conditions are met:
@@ -39,7 +57,7 @@ public protocol SwiftyCamButtonDelegate: class {
      shrtl
      """#
 
-     var something2 = #"lf"L#"ldgjl"#
+     var something2 = #"lf"L#"ldgjl\"#
 
     /// Called when UITapGestureRecognizer begins
 

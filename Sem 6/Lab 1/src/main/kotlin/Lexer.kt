@@ -1,3 +1,4 @@
+import jdk.nashorn.api.tree.GotoTree
 import java.lang.StringBuilder
 
 class Lexer(fileName: String) {
@@ -82,8 +83,10 @@ class Lexer(fileName: String) {
                 58 -> rightEquals(c)
                 59 -> leftEquals(c)
 
+                // Identifiers
                 100 -> identifier(c)
 
+                // String Literals
                 200 -> rawString(c)
                 202 -> rawStringOne(c)
                 203 -> rawStringTwo(c)
@@ -94,7 +97,20 @@ class Lexer(fileName: String) {
                 208 -> stringLiteral(c)
                 209 -> stringOne(c)
                 210 -> stringTwo(c)
+                211 -> singleCharOpen(c)
+                212 -> singleCharBeforeClosed(c)
+                213 -> singleCharAddSpecial(c)
                 214 -> directive(c)
+                215 -> basicString(c)
+                216 -> basicStringTwo(c)
+                217 -> basicStringThree(c)
+                218 -> basicStringFour(c)
+                219 -> basicStringFive(c)
+                221 -> simpleBasicString(c)
+                222 -> specialCharSimple(c)
+                223 -> charLiteral(c)
+                224 -> specialCharCompl(c)
+
 
 
                 else -> {
@@ -157,6 +173,8 @@ class Lexer(fileName: String) {
             c == '>' -> goto(55, c)
             c == '<' -> goto(56, c)
             c == '#' -> goto(200, c)
+            c == '\'' -> goto(211, c)
+            c == '"' -> goto(215, c)
             else -> goto(0, c)
         }
     }
@@ -266,8 +284,14 @@ class Lexer(fileName: String) {
      * #""" ... """# in buffer
      */
     private fun stringLiteral(c: Char) {
-        reader.stepBack()
-        addToken(Token.Type.LITERAL_STRING)
+        if (isSeparator(c) || isOperator(c) || c == ' ') {
+            reader.stepBack()
+            addToken(Token.Type.LITERAL_STRING)
+        }
+        else {
+            reader.stepBack()
+            addToken((Token.Type.ERROR))
+        }
     }
 
     /**
@@ -295,6 +319,40 @@ class Lexer(fileName: String) {
     }
 
     /**
+     * STATE 211
+     * ' in buffer
+     */
+    private fun singleCharOpen(c: Char) {
+        when {
+            c == '\\' -> goto(213, c)
+            c == '\n' -> goto(-1, c)
+            else -> goto(212, c)
+        }
+    }
+
+    /**
+     * STATE 212
+     * '. OR '\. in buffer
+     */
+    private fun singleCharBeforeClosed(c: Char) {
+        when {
+            c == '\'' -> goto(223, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 213
+     * '\ in buffer
+     */
+    private fun singleCharAddSpecial(c: Char) {
+        when {
+            c == '\n' -> goto(-1, c)
+            else -> goto(212, c)
+        }
+    }
+
+    /**
      * STATE 214
      * #aA in buffer
      */
@@ -311,6 +369,109 @@ class Lexer(fileName: String) {
             else -> goto(-1, c)
         }
     }
+
+    /**
+     * STATE 215
+     * " in buffer
+     */
+    private fun basicString(c: Char) {
+        when {
+            c == '"' -> goto(216, c)
+            c == '\\' -> goto(222, c)
+            c == '\n' -> goto(-1, c)
+            else -> goto(221, c)
+        }
+    }
+
+    /**
+     * STATE 216
+     * "" in buffer
+     */
+    private fun basicStringTwo(c: Char) {
+        when {
+            c == '"' -> goto(217, c)
+            c == '\\' -> goto(222, c)
+            c == '\n' -> goto(-1, c)
+            else -> goto(221, c)
+        }
+    }
+
+    /**
+     * STATE 217
+     * """ in buffer
+     */
+    private fun basicStringThree(c: Char) {
+        when {
+            c == '"' -> goto(218, c)
+            c == '\\' -> goto(224, c)
+            else -> goto(217, c)
+        }
+    }
+
+    /**
+     * STATE 218
+     * """ ... " in buffer
+     */
+    private fun basicStringFour(c: Char) {
+        when {
+            c == '"' -> goto(219, c)
+            else -> goto(217, c)
+        }
+    }
+
+    /**
+     * STATE 219
+     * """ ... "" in buffer
+     */
+    private fun basicStringFive(c: Char) {
+        when {
+            c == '"' -> goto(208, c)
+            else -> goto(217, c)
+        }
+    }
+
+    /**
+     * STATE 221
+     * " ... in buffer
+     */
+    private fun simpleBasicString(c: Char) {
+        when {
+            c == '"' -> goto(208, c)
+            c == '\n' -> goto(-1, c)
+            c == '\\' -> goto(222, c)
+            else -> goto(221, c)
+        }
+    }
+
+    /**
+     * STATE 222
+     * " .... \ in buffer
+     */
+    private fun specialCharSimple(c: Char) {
+        when {
+            c == '\n' -> goto(-1, c)
+            else -> goto(221, c)
+        }
+    }
+
+    /**
+     * STATE 223
+     * '.' OR '\.' in buffer
+     */
+    private fun charLiteral(c: Char) {
+        reader.stepBack()
+        addToken(Token.Type.LITERAL_CHAR)
+    }
+
+    /**
+     * STATE 224
+     * """ ... \ in buffer
+     */
+    private fun specialCharCompl(c: Char) {
+        goto(217, c)
+    }
+
+
 
     /**
      * STATE 1
