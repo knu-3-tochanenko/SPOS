@@ -10,6 +10,7 @@ data class Token(
         OPERATOR,
         SEPARATOR,
         PRIMITIVE,
+        DIRECTIVE,
         WHITESPACE,
         IDENTIFIER,
         LITERAL_INT,

@@ -84,6 +84,19 @@ class Lexer(fileName: String) {
 
                 100 -> identifier(c)
 
+                200 -> rawString(c)
+                202 -> rawStringOne(c)
+                203 -> rawStringTwo(c)
+                204 -> rawStringThree(c)
+                205 -> rawStringFour(c)
+                206 -> rawStringFive(c)
+                207 -> rawStringSix(c)
+                208 -> stringLiteral(c)
+                209 -> stringOne(c)
+                210 -> stringTwo(c)
+                214 -> directive(c)
+
+
                 else -> {
                     print("Error state of $state. Please check scheme again.")
                 }
@@ -143,6 +156,7 @@ class Lexer(fileName: String) {
             c == '&' -> goto(46, c)
             c == '>' -> goto(55, c)
             c == '<' -> goto(56, c)
+            c == '#' -> goto(200, c)
             else -> goto(0, c)
         }
     }
@@ -162,6 +176,135 @@ class Lexer(fileName: String) {
                 else addToken(Token.Type.IDENTIFIER)
                 reader.stepBack()
             }
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 200
+     * RAW COMMENT
+     * # in buffer
+     */
+    private fun rawString(c: Char) {
+        when {
+            c == '"' -> goto(202, c)
+            isPartOfIdentifier(c) -> goto(214, c)
+            else -> goto(-1, c)
+        }
+    }
+
+    /**
+     * STATE 202
+     * #" in buffer
+     */
+    private fun rawStringOne(c: Char) {
+        when {
+            c == '"' -> goto(203, c)
+            c == '\n' -> goto(-1, c)
+            else -> goto(209, c)
+        }
+    }
+
+    /**
+     * STATE 203
+     * #"" in buffer
+     */
+    private fun rawStringTwo(c: Char) {
+        when {
+            c == '"' -> goto(204, c)
+            c == '\n' -> goto(-1, c)
+            else -> goto(209, c)
+        }
+    }
+
+    /**
+     * STATE 204
+     * #""" and symbols in buffer
+     */
+    private fun rawStringThree(c: Char) {
+        when {
+            c == '"' -> goto(205, c)
+            else -> goto(204, c)
+        }
+    }
+
+    /**
+     * STATE 205
+     * #""" ... " in buffer
+     */
+    private fun rawStringFour(c: Char) {
+        when {
+            c == '"' -> goto(206, c)
+            else -> goto(204, c)
+        }
+    }
+
+    /**
+     * STATE 206
+     * #""" ... "" in buffer
+     */
+    private fun rawStringFive(c: Char) {
+        when {
+            c == '"' -> goto(207, c)
+            else -> goto(204, c)
+        }
+    }
+
+    /**
+     * STATE 207
+     * #""" ... """ in buffer
+     */
+    private fun rawStringSix(c: Char) {
+        when {
+            c == '#' -> goto(208, c)
+            else -> goto(204, c)
+        }
+    }
+
+    /**
+     * STATE 208
+     * #""" ... """# in buffer
+     */
+    private fun stringLiteral(c: Char) {
+        reader.stepBack()
+        addToken(Token.Type.LITERAL_STRING)
+    }
+
+    /**
+     * STATE 209
+     * #" ... in string
+     */
+    private fun stringOne(c: Char) {
+        when {
+            c == '"' -> goto(210, c)
+            c == '\n' -> goto(-1, c)
+            else -> goto(209, c)
+        }
+    }
+
+    /**
+     * STATE 210
+     * #" ... " in string
+     */
+    private fun stringTwo(c: Char) {
+        when {
+            c == '#' -> goto(208, c)
+            c == '\n' -> goto(-1, c)
+            else -> goto(208, c)
+        }
+    }
+
+    /**
+     * STATE 214
+     * #aA in buffer
+     */
+    private fun directive(c: Char) {
+        when {
+            isSeparator(c) || c == ' ' -> {
+                reader.stepBack()
+                addToken(Token.Type.DIRECTIVE)
+            }
+            isPartOfIdentifier(c) -> goto(214, c)
             else -> goto(-1, c)
         }
     }

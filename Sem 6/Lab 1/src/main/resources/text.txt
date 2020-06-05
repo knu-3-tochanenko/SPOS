@@ -22,6 +22,21 @@ import UIKit &>>= ++ wow co+&123456789
 
 public protocol SwiftyCamButtonDelegate: class {
 
+    var something = #"""
+    dflkgjdg
+    d dflgjg
+
+    rh
+
+
+     rt
+     h
+     hrltj ltjlrt
+     shrtl
+     """#
+
+     var something2 = #"lf"L#"ldgjl"#
+
     /// Called when UITapGestureRecognizer begins
 
     func buttonWasTapped() <wow>

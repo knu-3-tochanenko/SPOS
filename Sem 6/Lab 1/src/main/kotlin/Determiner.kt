@@ -8,6 +8,8 @@ fun isSeparator(c: Char) = c == '(' || c == ')' || c == '{'
 
 fun isPartOfIdentifier(c: Char) = Pattern.matches("\\w|\\d|_|\\\$", c.toString())
 
+fun isLetter(c: Char) = Pattern.matches("\\w", c.toString())
+
 fun isOperator(c: Char) = c == '=' || c == '>' || c == '<'
         || c == '!' || c == '~' || c == ':'
         || c == '?' || c == '&' || c == '|'

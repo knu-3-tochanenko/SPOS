@@ -12,9 +12,9 @@ class LexerWrapper(
                 Token.Type.LITERAL_INT,
                 Token.Type.LITERAL_NULL,
                 Token.Type.LITERAL_STRING -> print(token.string.cyan())
-                Token.Type.KEYWORD, Token.Type.PRIMITIVE -> print(token.string.cyan())
+                Token.Type.KEYWORD, Token.Type.PRIMITIVE -> print(token.string.purple())
                 Token.Type.OPERATOR -> print("[${token.string.blue()}]")
-                Token.Type.SEPARATOR -> print(token.string.purple())
+                Token.Type.SEPARATOR -> print(token.string.white())
                 else -> print(token.string)
             }
 
@@ -24,6 +24,10 @@ class LexerWrapper(
     fun printTokens() {
         for (token in tokens)
             println(token)
+    }
+
+    fun printSorted() {
+
     }
 
 }
