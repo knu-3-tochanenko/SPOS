@@ -2,8 +2,8 @@ fun main() {
     val lexer = Lexer("text.txt")
     lexer.run()
 
-    val tokens = lexer.tokens
+    val wrapper = LexerWrapper(lexer.tokens)
 
-    for (token in tokens)
-        println(token)
+    wrapper.printToConsole()
+    wrapper.printTokens()
 }

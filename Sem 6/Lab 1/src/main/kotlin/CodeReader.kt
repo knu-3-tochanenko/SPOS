@@ -37,8 +37,11 @@ class CodeReader(fileName: String) {
     }
 
     fun stepBack() {
-        if (current == 0)
-            throw IllegalArgumentException("You can't step back from the start of the line")
+//        if (current == 0)
+//            throw IllegalArgumentException("You can't step back from the start of the line")
+        if (current == 0) {
+            return
+        }
         current--
     }
 }

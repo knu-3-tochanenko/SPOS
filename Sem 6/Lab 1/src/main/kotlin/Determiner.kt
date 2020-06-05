@@ -4,14 +4,16 @@ fun isRegular(c: Char) = Pattern.matches("\\w| |\\d|_|\\\$", c.toString()) || is
 
 fun isSeparator(c: Char) = c == '(' || c == ')' || c == '{'
         || c == '}' || c == '[' || c == ']'
-        || c == ';' || c == ',' || c == '\n'
+        || c == ';' || c == ',' || c == ':' || c == '\n'
+
+fun isPartOfIdentifier(c: Char) = Pattern.matches("\\w|\\d|_|\\\$", c.toString())
 
 fun isOperator(c: Char) = c == '=' || c == '>' || c == '<'
         || c == '!' || c == '~' || c == ':'
         || c == '?' || c == '&' || c == '|'
         || c == '+' || c == '-' || c == '*'
         || c == '/' || c == '^' || c == '%'
-        || c == '`' || c == '#' || c == '@'
+        || c == '`' || c == '#' || c == '@' || c == '.'
 
 fun isSpecial(sequence: String) = "\\b" == sequence || "\\t" == sequence || "\\n" == sequence
         || "\\" == sequence || "'" == sequence || "\"" == sequence
@@ -79,6 +81,26 @@ private val keywords = listOf(
     "throws",
     "true",
     "try"
+)
+
+fun isPrimitive(word: String) = primitives.contains(word)
+
+private val primitives = listOf(
+    "Int",
+    "UInt",
+    "Float",
+    "Double",
+    "Bool",
+    "String",
+    "Character",
+    "Optional",
+    "Tuples",
+    "Int8",
+    "UInt8",
+    "Int32",
+    "UInt32",
+    "Int64",
+    "UInt64"
 )
 
 fun isKeyword(word: String) = keywords.contains(word)

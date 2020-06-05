@@ -1,6 +1,6 @@
-class Token(
-    private val string: String,
-    private val type: Type
+data class Token(
+    val string: String,
+    val type: Type
 ) {
 
     enum class Type {
@@ -9,6 +9,7 @@ class Token(
         COMMENT,
         OPERATOR,
         SEPARATOR,
+        PRIMITIVE,
         WHITESPACE,
         IDENTIFIER,
         LITERAL_INT,
@@ -19,5 +20,5 @@ class Token(
         LITERAL_NULL;
     }
 
-    override fun toString() = "${type} : {$string}"
+    override fun toString() = "${type.name}=$string;"
 }

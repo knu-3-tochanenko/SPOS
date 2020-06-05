@@ -82,6 +82,8 @@ class Lexer(fileName: String) {
                 58 -> rightEquals(c)
                 59 -> leftEquals(c)
 
+                100 -> identifier(c)
+
                 else -> {
                     print("Error state of $state. Please check scheme again.")
                 }
@@ -97,6 +99,7 @@ class Lexer(fileName: String) {
      */
     private fun errorState(c: Char) {
         // TODO
+        reader.stepBack()
         addToken(Token.Type.ERROR)
     }
 
@@ -107,23 +110,59 @@ class Lexer(fileName: String) {
      */
     private fun startState(c: Char) {
         // TODO
-        when (c) {
-            '/' -> goto(1, c)
-            '=' -> goto(7, c)
-            '^' -> goto(12, c)
-            '+' -> goto(15, c)
-            '-' -> goto(17, c)
-            '!' -> goto(22, c)
-            '.' -> goto(26, c)
-            '~' -> goto(31, c)
-            '%' -> goto(34, c)
-            '|' -> goto(37, c)
-            '*' -> goto(40, c)
-            '?' -> goto(43, c)
-            '&' -> goto(46, c)
-            '>' -> goto(55, c)
-            '<' -> goto(56, c)
+        when {
+            Character.isWhitespace(c) -> {
+//                addToken(Token.Type.WHITESPACE)
+                tokens.add(Token(c.toString(), Token.Type.WHITESPACE))
+                buffer.clear()
+                state = 0
+            }
+            c == '.' -> {
+                tokens.add(Token(c.toString(), Token.Type.OPERATOR))
+                buffer.clear()
+                state = 0
+            }
+            isPartOfIdentifier(c) -> goto(100, c)
+            isSeparator(c) -> {
+                tokens.add(Token(c.toString(), Token.Type.SEPARATOR))
+                buffer.clear()
+                state = 0
+            }
+            c == '/' -> goto(1, c)
+            c == '=' -> goto(7, c)
+            c == '^' -> goto(12, c)
+            c == '+' -> goto(15, c)
+            c == '-' -> goto(17, c)
+            c == '!' -> goto(22, c)
+            c == '.' -> goto(26, c)
+            c == '~' -> goto(31, c)
+            c == '%' -> goto(34, c)
+            c == '|' -> goto(37, c)
+            c == '*' -> goto(40, c)
+            c == '?' -> goto(43, c)
+            c == '&' -> goto(46, c)
+            c == '>' -> goto(55, c)
+            c == '<' -> goto(56, c)
             else -> goto(0, c)
+        }
+    }
+
+    /**
+     * STATE 100
+     * IDENTIFIERS
+     */
+    private fun identifier(c: Char) {
+        when {
+            isPartOfIdentifier(c) -> goto(100, c)
+            Character.isWhitespace(c) || isOperator(c) || isSeparator(c) -> {
+                if (isPrimitive(buffer.toString()))
+                    addToken(Token.Type.PRIMITIVE)
+                else if (isKeyword(buffer.toString()))
+                    addToken(Token.Type.KEYWORD)
+                else addToken(Token.Type.IDENTIFIER)
+                reader.stepBack()
+            }
+            else -> goto(-1, c)
         }
     }
 
@@ -192,6 +231,8 @@ class Lexer(fileName: String) {
      */
     private fun operator(c: Char) {
         reader.stepBack()
+        reader.stepBack()
+        buffer.setLength(buffer.length - 1)
         addToken(Token.Type.OPERATOR)
     }
 
