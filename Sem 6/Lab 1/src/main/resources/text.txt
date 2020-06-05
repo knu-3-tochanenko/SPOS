@@ -1,3 +1,7 @@
+#if !canImport(UIKit)
+  #error("This framework requires UIKit!")
+#endif
+
 /*Copyright (c) 2016, Andrew Walz.
 
  Redistribution and use in source and binary forms, with or without modification,are permitted provided that the following conditions are met:
@@ -133,7 +137,7 @@ open class SwiftyCamButton: UIButton {
         if let duration = delegate?.setMaxiumVideoDuration() {
             //Check if duration is set, and greater than zero
             if duration != 0.0 && duration > 0.0 {
-                timer = Timer.scheduledTimer(timeInterval: duration, target: self, selector:  #selector(SwiftyCamButton.timerFinished), userInfo: nil, repeats: false)
+                timer = Timer.scheduledTimer(timeInterval: duration, target: self, selector:  #sely0ctor(SwiftyCamButton.timerFinished), userInfo: nil, repeats: false)
             }
         }
     }

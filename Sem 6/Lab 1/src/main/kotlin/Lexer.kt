@@ -302,7 +302,10 @@ class Lexer(fileName: String) {
         when {
             isSeparator(c) || c == ' ' -> {
                 reader.stepBack()
-                addToken(Token.Type.DIRECTIVE)
+                if (isDirective(buffer.substring(1)))
+                    addToken(Token.Type.DIRECTIVE)
+                else
+                    addToken(Token.Type.ERROR)
             }
             isPartOfIdentifier(c) -> goto(214, c)
             else -> goto(-1, c)
