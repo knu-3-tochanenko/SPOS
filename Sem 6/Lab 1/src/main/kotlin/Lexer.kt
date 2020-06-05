@@ -1,6 +1,3 @@
-import jdk.nashorn.api.tree.GotoTree
-import java.lang.StringBuilder
-
 class Lexer(fileName: String) {
     private var state = 0
     private var buffer: StringBuilder = StringBuilder("")
@@ -18,14 +15,14 @@ class Lexer(fileName: String) {
 
     private fun addToken(type: Token.Type) {
         tokens.add(Token(buffer.toString(), type))
-        buffer.clear()
+        buffer = StringBuilder("")
         state = 0
     }
 
     private fun operatorIfOk(c: Char) {
         when {
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -138,12 +135,11 @@ class Lexer(fileName: String) {
                 224 -> specialCharCompl(c)
 
 
-
                 else -> {
                     print("Error state of $state. Please check scheme again.")
                 }
             }
-
+            print(if (Character.isWhitespace(c) && (c != ' ' || c != '\t')) "\\n\n" else c)
             c = reader.next()
         }
     }
@@ -155,6 +151,7 @@ class Lexer(fileName: String) {
     private fun errorState(c: Char) {
         reader.stepBack()
         addToken(Token.Type.ERROR)
+        buffer.append(c)
     }
 
     /**
@@ -167,20 +164,20 @@ class Lexer(fileName: String) {
         when {
             Character.isWhitespace(c) -> {
                 tokens.add(Token(c.toString(), Token.Type.WHITESPACE))
-                buffer.clear()
+                buffer = StringBuilder("")
                 state = 0
             }
             c == '0' -> goto(101, c)
             isDecimal(c) && c != '0' -> goto(105, c)
             c == '.' -> {
                 tokens.add(Token(c.toString(), Token.Type.OPERATOR))
-                buffer.clear()
+                buffer = StringBuilder("")
                 state = 0
             }
             isPartOfIdentifier(c) -> goto(100, c)
             isSeparator(c) -> {
                 tokens.add(Token(c.toString(), Token.Type.SEPARATOR))
-                buffer.clear()
+                buffer = StringBuilder("")
                 state = 0
             }
             c == '/' -> goto(1, c)
@@ -222,7 +219,7 @@ class Lexer(fileName: String) {
                 }
                 reader.stepBack()
             }
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -237,8 +234,8 @@ class Lexer(fileName: String) {
             c == 'x' -> goto(104, c)
             c == '.' -> goto(106, c)
             isDecimal(c) -> goto(105, c)
-            isOperator(c) || isSeparator(c) || c == ' ' -> goto(120, c)
-            else -> goto(-1, c)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(120)
+            else -> justGo(-1)
         }
     }
 
@@ -249,7 +246,7 @@ class Lexer(fileName: String) {
     private fun binaryDigits(c: Char) {
         when {
             c == '0' || c == '1' -> goto(118, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -260,7 +257,7 @@ class Lexer(fileName: String) {
     private fun octalDigits(c: Char) {
         when {
             isOctal(c) -> goto(117, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -271,7 +268,7 @@ class Lexer(fileName: String) {
     private fun hexDigits(c: Char) {
         when {
             isHex(c) -> goto(116, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -283,9 +280,9 @@ class Lexer(fileName: String) {
         when {
             isDecimal(c) -> goto(105, c)
             c == '.' -> goto(106, c)
-            isOperator(c) || isSeparator(c) || c == ' ' -> goto(120, c)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(120)
             c == 'e' || c == 'E' -> goto(108, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -296,7 +293,7 @@ class Lexer(fileName: String) {
     private fun decimalWithDot(c: Char) {
         when {
             isDecimal(c) -> goto(107, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -307,9 +304,9 @@ class Lexer(fileName: String) {
     private fun decimalWithDotAndDecimals(c: Char) {
         when {
             isDecimal(c) -> goto(107, c)
-            isOperator(c) || isSeparator(c) || c == ' ' -> goto(119, c)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(119)
             c == 'e' || c == 'E' -> goto(108, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -321,7 +318,7 @@ class Lexer(fileName: String) {
         when {
             isDecimal(c) -> goto(110, c)
             c == '+' || c == '-' -> goto(109, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -332,7 +329,7 @@ class Lexer(fileName: String) {
     private fun floatDecimalWithSign(c: Char) {
         when {
             isDecimal(c) -> goto(110, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -343,8 +340,8 @@ class Lexer(fileName: String) {
     private fun floatDecimal(c: Char) {
         when {
             isDecimal(c) -> goto(110, c)
-            isOperator(c) || isSeparator(c) || c == ' ' -> goto(119, c)
-            else -> goto(-1, c)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(119)
+            else -> justGo(-1)
         }
     }
 
@@ -355,7 +352,7 @@ class Lexer(fileName: String) {
     private fun hexAndDot(c: Char) {
         when {
             isHex(c) -> goto(112, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -366,9 +363,9 @@ class Lexer(fileName: String) {
     private fun hexFloat(c: Char) {
         when {
             c == 'p' || c == 'P' -> goto(113, c)
-            isOperator(c) || isSeparator(c) || c == ' ' -> goto(119, c)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(119)
             isHex(c) -> goto(112, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -380,7 +377,7 @@ class Lexer(fileName: String) {
         when {
             c == '+' || c == '-' -> goto(115, c)
             isHex(c) -> goto(114, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -391,8 +388,8 @@ class Lexer(fileName: String) {
     private fun hexAndPAndHex(c: Char) {
         when {
             isHex(c) -> goto(114, c)
-            isOperator(c) || isSeparator(c) || c == ' ' -> goto(119, c)
-            else -> goto(-1, c)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(119)
+            else -> justGo(-1)
         }
     }
 
@@ -403,7 +400,7 @@ class Lexer(fileName: String) {
     private fun hexAndPAndSymbol(c: Char) {
         when {
             isHex(c) -> goto(114, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -416,8 +413,8 @@ class Lexer(fileName: String) {
             isHex(c) -> goto(116, c)
             c == '.' -> goto(111, c)
             c == 'p' || c == 'P' -> goto(113, c)
-            isOperator(c) || isSeparator(c) || c == ' ' -> goto(119, c)
-            else -> goto(-1, c)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(119)
+            else -> justGo(-1)
         }
     }
 
@@ -428,8 +425,8 @@ class Lexer(fileName: String) {
     private fun octalDigitsFull(c: Char) {
         when {
             isOctal(c) -> goto(117, c)
-            isOperator(c) || isSeparator(c) || c == ' ' -> goto(120, c)
-            else -> goto(-1, c)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(120)
+            else -> justGo(-1)
         }
     }
 
@@ -440,8 +437,8 @@ class Lexer(fileName: String) {
     private fun binaryDigitsFull(c: Char) {
         when {
             c == '0' || c == '1' -> goto(118, c)
-            isOperator(c) || isSeparator(c) || c == ' ' -> goto(120, c)
-            else -> goto(-1, c)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(120)
+            else -> justGo(-1)
         }
     }
 
@@ -450,11 +447,9 @@ class Lexer(fileName: String) {
      * FLOAT LITERAL
      */
     private fun floatLiteral(c: Char) {
+//        reader.stepBack()
         reader.stepBack()
-        reader.stepBack()
-        tokens.add(Token(buffer.toString().substring(0, buffer.length), Token.Type.LITERAL_FLOAT))
-        buffer.clear()
-        state = 0
+        addToken(Token.Type.LITERAL_FLOAT)
     }
 
     /**
@@ -462,11 +457,9 @@ class Lexer(fileName: String) {
      * INTEGER LITERAL
      */
     private fun integerLiteral(c: Char) {
+//        reader.stepBack()
         reader.stepBack()
-        reader.stepBack()
-        tokens.add(Token(buffer.toString().substring(0, buffer.length - 1), Token.Type.LITERAL_INT))
-        buffer.clear()
-        state = 0
+        addToken(Token.Type.LITERAL_INT)
     }
 
     /**
@@ -478,7 +471,7 @@ class Lexer(fileName: String) {
         when {
             c == '"' -> goto(202, c)
             isPartOfIdentifier(c) -> goto(214, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -489,7 +482,7 @@ class Lexer(fileName: String) {
     private fun rawStringOne(c: Char) {
         when {
             c == '"' -> goto(203, c)
-            c == '\n' -> goto(-1, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
             else -> goto(209, c)
         }
     }
@@ -501,7 +494,7 @@ class Lexer(fileName: String) {
     private fun rawStringTwo(c: Char) {
         when {
             c == '"' -> goto(204, c)
-            c == '\n' -> goto(-1, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
             else -> goto(209, c)
         }
     }
@@ -555,11 +548,10 @@ class Lexer(fileName: String) {
      * #""" ... """# in buffer
      */
     private fun stringLiteral(c: Char) {
-        if (isSeparator(c) || isOperator(c) || c == ' ') {
+        if (isSeparator(c) || isOperator(c) || Character.isWhitespace(c)) {
             reader.stepBack()
             addToken(Token.Type.LITERAL_STRING)
-        }
-        else {
+        } else {
             reader.stepBack()
             addToken((Token.Type.ERROR))
         }
@@ -572,7 +564,7 @@ class Lexer(fileName: String) {
     private fun stringOne(c: Char) {
         when {
             c == '"' -> goto(210, c)
-            c == '\n' -> goto(-1, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
             else -> goto(209, c)
         }
     }
@@ -584,7 +576,7 @@ class Lexer(fileName: String) {
     private fun stringTwo(c: Char) {
         when {
             c == '#' -> goto(208, c)
-            c == '\n' -> goto(-1, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
             else -> goto(208, c)
         }
     }
@@ -596,7 +588,7 @@ class Lexer(fileName: String) {
     private fun singleCharOpen(c: Char) {
         when {
             c == '\\' -> goto(213, c)
-            c == '\n' -> goto(-1, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
             else -> goto(212, c)
         }
     }
@@ -608,7 +600,7 @@ class Lexer(fileName: String) {
     private fun singleCharBeforeClosed(c: Char) {
         when {
             c == '\'' -> goto(223, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -618,7 +610,7 @@ class Lexer(fileName: String) {
      */
     private fun singleCharAddSpecial(c: Char) {
         when {
-            c == '\n' -> goto(-1, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
             else -> goto(212, c)
         }
     }
@@ -629,7 +621,7 @@ class Lexer(fileName: String) {
      */
     private fun directive(c: Char) {
         when {
-            isSeparator(c) || c == ' ' -> {
+            isSeparator(c) || Character.isWhitespace(c) -> {
                 reader.stepBack()
                 if (isDirective(buffer.substring(1)))
                     addToken(Token.Type.DIRECTIVE)
@@ -637,7 +629,7 @@ class Lexer(fileName: String) {
                     addToken(Token.Type.ERROR)
             }
             isPartOfIdentifier(c) -> goto(214, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -649,7 +641,7 @@ class Lexer(fileName: String) {
         when {
             c == '"' -> goto(216, c)
             c == '\\' -> goto(222, c)
-            c == '\n' -> goto(-1, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
             else -> goto(221, c)
         }
     }
@@ -662,7 +654,7 @@ class Lexer(fileName: String) {
         when {
             c == '"' -> goto(217, c)
             c == '\\' -> goto(222, c)
-            c == '\n' -> goto(-1, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
             else -> goto(221, c)
         }
     }
@@ -708,7 +700,7 @@ class Lexer(fileName: String) {
     private fun simpleBasicString(c: Char) {
         when {
             c == '"' -> goto(208, c)
-            c == '\n' -> goto(-1, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
             c == '\\' -> goto(222, c)
             else -> goto(221, c)
         }
@@ -720,7 +712,7 @@ class Lexer(fileName: String) {
      */
     private fun specialCharSimple(c: Char) {
         when {
-            c == '\n' -> goto(-1, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
             else -> goto(221, c)
         }
     }
@@ -743,7 +735,6 @@ class Lexer(fileName: String) {
     }
 
 
-
     /**
      * STATE 1
      * / in buffer
@@ -754,7 +745,7 @@ class Lexer(fileName: String) {
             c == '=' -> goto(11, c)
             c == '*' -> goto(3, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -764,7 +755,7 @@ class Lexer(fileName: String) {
      */
     private fun singleLineComment(c: Char) {
         when {
-            c == '\n' -> goto(5, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> goto(5, c)
             else -> goto(2, c)
         }
     }
@@ -823,7 +814,7 @@ class Lexer(fileName: String) {
         when {
             c == '=' -> goto(8, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -836,7 +827,7 @@ class Lexer(fileName: String) {
         when {
             c == '=' -> goto(9, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -867,7 +858,7 @@ class Lexer(fileName: String) {
         when {
             c == '=' -> goto(13, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -889,7 +880,7 @@ class Lexer(fileName: String) {
         when {
             c == '+' || c == '=' -> goto(16, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -911,7 +902,7 @@ class Lexer(fileName: String) {
         when {
             c == '-' || c == '>' || c == '=' -> goto(19, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -933,7 +924,7 @@ class Lexer(fileName: String) {
         when {
             c == '=' -> goto(23, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -946,7 +937,7 @@ class Lexer(fileName: String) {
         when {
             c == '=' -> goto(24, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -969,7 +960,7 @@ class Lexer(fileName: String) {
         when {
             c == '.' -> goto(27, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -981,7 +972,7 @@ class Lexer(fileName: String) {
     private fun dotDot(c: Char) {
         when {
             c == '.' || c == '<' -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1003,7 +994,7 @@ class Lexer(fileName: String) {
         when {
             c == '>' || c == '=' -> goto(32, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1025,7 +1016,7 @@ class Lexer(fileName: String) {
         when {
             c == '=' -> goto(35, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1047,7 +1038,7 @@ class Lexer(fileName: String) {
         when {
             c == '|' || c == '=' -> goto(38, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1069,7 +1060,7 @@ class Lexer(fileName: String) {
         when {
             c == '=' -> goto(41, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1091,7 +1082,7 @@ class Lexer(fileName: String) {
         when {
             c == '.' || c == '?' -> goto(44, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1117,7 +1108,7 @@ class Lexer(fileName: String) {
             c == '>' -> goto(48, c)
             c == '<' -> goto(49, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1138,7 +1129,7 @@ class Lexer(fileName: String) {
     private fun ampersandAndRight(c: Char) {
         when {
             c == '>' -> goto(50, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1150,7 +1141,7 @@ class Lexer(fileName: String) {
     private fun ampersandAndLeft(c: Char) {
         when {
             c == '<' -> goto(51, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1163,7 +1154,7 @@ class Lexer(fileName: String) {
         when {
             c == '=' -> goto(54, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1176,7 +1167,7 @@ class Lexer(fileName: String) {
         when {
             c == '=' -> goto(55, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1208,7 +1199,7 @@ class Lexer(fileName: String) {
             c == '>' -> goto(50, c)
             c == '=' -> goto(58, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 
@@ -1222,7 +1213,7 @@ class Lexer(fileName: String) {
             c == '>' -> goto(50, c)
             c == '=' -> goto(59, c)
             isRegular(c) -> goto(6, c)
-            else -> goto(-1, c)
+            else -> justGo(-1)
         }
     }
 

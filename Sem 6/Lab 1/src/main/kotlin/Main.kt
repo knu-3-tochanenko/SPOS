@@ -1,5 +1,5 @@
 fun main() {
-    val lexer = Lexer("text.txt")
+    val lexer = Lexer("bugs.txt")
     lexer.run()
 
     val wrapper = LexerWrapper(lexer.tokens)

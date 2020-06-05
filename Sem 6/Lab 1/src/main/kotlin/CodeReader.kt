@@ -44,4 +44,6 @@ class CodeReader(fileName: String) {
         }
         current--
     }
+
+    fun current() = line!![current]
 }

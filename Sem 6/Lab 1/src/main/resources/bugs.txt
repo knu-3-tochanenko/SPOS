@@ -1,0 +1,13 @@
+'\'
+
+'\''
+
+1e-45
+1.45e16
+0.12e-15
+
+0xAfA.b01p+3
+
+var a = 118 + 0xFFF - 190.0e-10
+
+var something2 = #"lf"L#"ldgjl\"#
