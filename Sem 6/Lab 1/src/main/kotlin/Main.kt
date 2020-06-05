@@ -1,12 +1,9 @@
 fun main() {
-    val reader = CodeReader("text.txt")
+    val lexer = Lexer("text.txt")
+    lexer.run()
 
-    var char = reader.next()
+    val tokens = lexer.tokens
 
-    while (char != 0.toChar()) {
-        print(char)
-        char = reader.next()
-    }
-
-    println(Token("hello", Token.Type.COMMENT))
+    for (token in tokens)
+        println(token)
 }

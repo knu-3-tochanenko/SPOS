@@ -1,14 +1,17 @@
 import java.util.regex.Pattern
 
+fun isRegular(c: Char) = Pattern.matches("\\w| |\\d|_|\\\$", c.toString()) || isSeparator(c)
+
 fun isSeparator(c: Char) = c == '(' || c == ')' || c == '{'
         || c == '}' || c == '[' || c == ']'
-        || c == ';' || c == ',' || c == '@'
+        || c == ';' || c == ',' || c == '\n'
 
 fun isOperator(c: Char) = c == '=' || c == '>' || c == '<'
         || c == '!' || c == '~' || c == ':'
         || c == '?' || c == '&' || c == '|'
         || c == '+' || c == '-' || c == '*'
         || c == '/' || c == '^' || c == '%'
+        || c == '`' || c == '#' || c == '@'
 
 fun isSpecial(sequence: String) = "\\b" == sequence || "\\t" == sequence || "\\n" == sequence
         || "\\" == sequence || "'" == sequence || "\"" == sequence
