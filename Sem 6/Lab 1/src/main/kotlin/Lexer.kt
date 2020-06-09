@@ -20,8 +20,14 @@ class Lexer(fileName: String) {
     }
 
     private fun operatorIfOk(c: Char) {
+        println("Current string $buffer for $c")
         when {
-            isRegular(c) -> goto(6, c)
+            isRegular(c) -> {
+                reader.stepBack()
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
@@ -43,46 +49,46 @@ class Lexer(fileName: String) {
                 2 -> singleLineComment(c)
                 3 -> beginMultilineComment(c)
                 4 -> maybeEndOfMultilineComment(c)
-                5 -> endOfMultilineComment(c)
-                6 -> operator(c)
+//                5 -> endOfMultilineComment(c)
+//                6 -> operator(c)
                 7 -> equalsSign(c)
                 8 -> doubleEquals(c)
-                9 -> tripleEquals(c)
-                11 -> operatorSlashEquals(c)
+//                9 -> tripleEquals(c)
+//                11 -> operatorSlashEquals(c)
                 12 -> roofSign(c)
-                13 -> roofEqualsOperator(c)
+//                13 -> roofEqualsOperator(c)
                 15 -> plus(c)
-                16 -> plusAndPlusOrEquals(c)
+//                16 -> plusAndPlusOrEquals(c)
                 17 -> minus(c)
-                19 -> minusAndSomething(c)
+//                19 -> minusAndSomething(c)
                 22 -> exclamationMark(c)
                 23 -> exclamationMarkAndEquals(c)
-                24 -> exclamationMarkAndDoubleEquals(c)
+//                24 -> exclamationMarkAndDoubleEquals(c)
                 26 -> dot(c)
                 27 -> dotDot(c)
-                28 -> dotDotAndSomething(c)
+//                28 -> dotDotAndSomething(c)
                 31 -> tilda(c)
-                32 -> tildaAndSomething(c)
+//                32 -> tildaAndSomething(c)
                 34 -> percent(c)
-                35 -> percentAndEquals(c)
+//                35 -> percentAndEquals(c)
                 37 -> vertical(c)
-                38 -> verticalAndSomething(c)
+//                38 -> verticalAndSomething(c)
                 40 -> star(c)
-                41 -> starAndEquals(c)
+//                41 -> starAndEquals(c)
                 43 -> questionMark(c)
-                44 -> questionMarkAndSomething(c)
+//                44 -> questionMarkAndSomething(c)
                 46 -> ampersand(c)
-                47 -> ampersandAndSomething(c)
+//                47 -> ampersandAndSomething(c)
                 48 -> ampersandAndRight(c)
                 49 -> ampersandAndLeft(c)
                 50 -> leftLeft(c)
                 51 -> rightRight(c)
-                53 -> leftLeftEquals(c)
-                54 -> rightRightEquals(c)
+//                53 -> leftLeftEquals(c)
+//                54 -> rightRightEquals(c)
                 55 -> right(c)
                 56 -> left(c)
-                58 -> rightEquals(c)
-                59 -> leftEquals(c)
+//                58 -> rightEquals(c)
+//                59 -> leftEquals(c)
 
                 // Identifiers
                 100 -> identifier(c)
@@ -106,8 +112,8 @@ class Lexer(fileName: String) {
                 116 -> hexDigitsFull(c)
                 117 -> octalDigitsFull(c)
                 118 -> binaryDigitsFull(c)
-                119 -> floatLiteral(c)
-                120 -> integerLiteral(c)
+//                119 -> floatLiteral(c)
+//                120 -> integerLiteral(c)
 
                 // String Literals
                 200 -> rawString(c)
@@ -131,7 +137,7 @@ class Lexer(fileName: String) {
                 219 -> basicStringFive(c)
                 221 -> simpleBasicString(c)
                 222 -> specialCharSimple(c)
-                223 -> charLiteral(c)
+//                223 -> charLiteral(c)
                 224 -> specialCharCompl(c)
 
 
@@ -139,7 +145,7 @@ class Lexer(fileName: String) {
                     print("Error state of $state. Please check scheme again.")
                 }
             }
-            print(if (Character.isWhitespace(c) && (c != ' ' || c != '\t')) "\\n\n" else c)
+            print(c)
             c = reader.next()
         }
     }
@@ -234,7 +240,10 @@ class Lexer(fileName: String) {
             c == 'x' -> goto(104, c)
             c == '.' -> goto(106, c)
             isDecimal(c) -> goto(105, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(120)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
+                reader.stepBack()
+                addToken(Token.Type.LITERAL_INT)
+            }
             else -> justGo(-1)
         }
     }
@@ -280,7 +289,10 @@ class Lexer(fileName: String) {
         when {
             isDecimal(c) -> goto(105, c)
             c == '.' -> goto(106, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(120)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
+                reader.stepBack()
+                addToken(Token.Type.LITERAL_INT)
+            }
             c == 'e' || c == 'E' -> goto(108, c)
             else -> justGo(-1)
         }
@@ -304,7 +316,10 @@ class Lexer(fileName: String) {
     private fun decimalWithDotAndDecimals(c: Char) {
         when {
             isDecimal(c) -> goto(107, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(119)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
+                reader.stepBack()
+                addToken(Token.Type.LITERAL_FLOAT)
+            }
             c == 'e' || c == 'E' -> goto(108, c)
             else -> justGo(-1)
         }
@@ -340,7 +355,10 @@ class Lexer(fileName: String) {
     private fun floatDecimal(c: Char) {
         when {
             isDecimal(c) -> goto(110, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(119)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
+                reader.stepBack()
+                addToken(Token.Type.LITERAL_FLOAT)
+            }
             else -> justGo(-1)
         }
     }
@@ -363,7 +381,10 @@ class Lexer(fileName: String) {
     private fun hexFloat(c: Char) {
         when {
             c == 'p' || c == 'P' -> goto(113, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(119)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
+                reader.stepBack()
+                addToken(Token.Type.LITERAL_FLOAT)
+            }
             isHex(c) -> goto(112, c)
             else -> justGo(-1)
         }
@@ -388,7 +409,10 @@ class Lexer(fileName: String) {
     private fun hexAndPAndHex(c: Char) {
         when {
             isHex(c) -> goto(114, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(119)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
+                reader.stepBack()
+                addToken(Token.Type.LITERAL_FLOAT)
+            }
             else -> justGo(-1)
         }
     }
@@ -413,7 +437,10 @@ class Lexer(fileName: String) {
             isHex(c) -> goto(116, c)
             c == '.' -> goto(111, c)
             c == 'p' || c == 'P' -> goto(113, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(119)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
+                reader.stepBack()
+                addToken(Token.Type.LITERAL_FLOAT)
+            }
             else -> justGo(-1)
         }
     }
@@ -425,7 +452,10 @@ class Lexer(fileName: String) {
     private fun octalDigitsFull(c: Char) {
         when {
             isOctal(c) -> goto(117, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(120)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
+                reader.stepBack()
+                addToken(Token.Type.LITERAL_INT)
+            }
             else -> justGo(-1)
         }
     }
@@ -437,30 +467,33 @@ class Lexer(fileName: String) {
     private fun binaryDigitsFull(c: Char) {
         when {
             c == '0' || c == '1' -> goto(118, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> justGo(120)
+            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
+                reader.stepBack()
+                addToken(Token.Type.LITERAL_INT)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 119
-     * FLOAT LITERAL
-     */
-    private fun floatLiteral(c: Char) {
+//    /**
+//     * STATE 119
+//     * FLOAT LITERAL
+//     */
+//    private fun floatLiteral(c: Char) {
+////        reader.stepBack()
 //        reader.stepBack()
-        reader.stepBack()
-        addToken(Token.Type.LITERAL_FLOAT)
-    }
-
-    /**
-     * STATE 120
-     * INTEGER LITERAL
-     */
-    private fun integerLiteral(c: Char) {
+//        addToken(Token.Type.LITERAL_FLOAT)
+//    }
+//
+//    /**
+//     * STATE 120
+//     * INTEGER LITERAL
+//     */
+//    private fun integerLiteral(c: Char) {
+////        reader.stepBack()
 //        reader.stepBack()
-        reader.stepBack()
-        addToken(Token.Type.LITERAL_INT)
-    }
+//        addToken(Token.Type.LITERAL_INT)
+//    }
 
     /**
      * STATE 200
@@ -577,7 +610,7 @@ class Lexer(fileName: String) {
         when {
             c == '#' -> goto(208, c)
             Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            else -> goto(208, c)
+            else -> goto(209, c)
         }
     }
 
@@ -599,7 +632,10 @@ class Lexer(fileName: String) {
      */
     private fun singleCharBeforeClosed(c: Char) {
         when {
-            c == '\'' -> goto(223, c)
+            c == '\'' -> {
+//                reader.stepBack()
+                addToken(Token.Type.LITERAL_CHAR)
+            }
             else -> justGo(-1)
         }
     }
@@ -717,14 +753,14 @@ class Lexer(fileName: String) {
         }
     }
 
-    /**
-     * STATE 223
-     * '.' OR '\.' in buffer
-     */
-    private fun charLiteral(c: Char) {
-        reader.stepBack()
-        addToken(Token.Type.LITERAL_CHAR)
-    }
+//    /**
+//     * STATE 223
+//     * '.' OR '\.' in buffer
+//     */
+//    private fun charLiteral(c: Char) {
+//        reader.stepBack()
+//        addToken(Token.Type.LITERAL_CHAR)
+//    }
 
     /**
      * STATE 224
@@ -742,9 +778,13 @@ class Lexer(fileName: String) {
     private fun slash(c: Char) {
         when {
             c == '/' -> goto(2, c)
-            c == '=' -> goto(11, c)
+            c == '=' -> operatorIfOk(c)
             c == '*' -> goto(3, c)
-            isRegular(c) -> goto(6, c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
@@ -755,7 +795,9 @@ class Lexer(fileName: String) {
      */
     private fun singleLineComment(c: Char) {
         when {
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> goto(5, c)
+            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> {
+                addToken(Token.Type.COMMENT)
+            }
             else -> goto(2, c)
         }
     }
@@ -779,31 +821,32 @@ class Lexer(fileName: String) {
      */
     private fun maybeEndOfMultilineComment(c: Char) {
         when {
-            c == '/' -> goto(5, c)
+            c == '/' -> {
+                addToken(Token.Type.COMMENT)
+            }
             else -> goto(3, c)
         }
     }
 
-    /**
-     * STATE 5, 20
-     * End of multiline comment OR End of single-line comment
-     * / * .... * in buffer OR //, text and newline in buffer
-     */
-    private fun endOfMultilineComment(c: Char) {
-        addToken(Token.Type.COMMENT)
-    }
+//    /**
+//     * STATE 5, 20
+//     * End of multiline comment OR End of single-line comment
+//     * / * .... * in buffer OR //, text and newline in buffer
+//     */
+//    private fun endOfMultilineComment(c: Char) {
+//        addToken(Token.Type.COMMENT)
+//    }
 
-    /**
-     * STATE 6, 10, 14, 18, 29
-     * Operators
-     * Operator and one char in buffer
-     */
-    private fun operator(c: Char) {
-        reader.stepBack()
-        reader.stepBack()
-        buffer.setLength(buffer.length - 1)
-        addToken(Token.Type.OPERATOR)
-    }
+//    /**
+//     * STATE 6, 10, 14, 18, 29
+//     * Operators
+//     * Operator and one char in buffer
+//     */
+//    private fun operator(c: Char) {
+//        reader.stepBack()
+//        buffer.setLength(buffer.length - 1)
+//        addToken(Token.Type.OPERATOR)
+//    }
 
     /**
      * STATE 7
@@ -813,7 +856,11 @@ class Lexer(fileName: String) {
     private fun equalsSign(c: Char) {
         when {
             c == '=' -> goto(8, c)
-            isRegular(c) -> goto(6, c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
@@ -825,29 +872,33 @@ class Lexer(fileName: String) {
      */
     private fun doubleEquals(c: Char) {
         when {
-            c == '=' -> goto(9, c)
-            isRegular(c) -> goto(6, c)
+            c == '=' -> operatorIfOk(c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 9
-     * Triple equals sign
-     * === in buffer
-     */
-    private fun tripleEquals(c: Char) {
-        operatorIfOk(c)
-    }
-
-    /**
-     * STATE 11
-     * Operator /=
-     * /= in buffer
-     */
-    private fun operatorSlashEquals(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 9
+//     * Triple equals sign
+//     * === in buffer
+//     */
+//    private fun tripleEquals(c: Char) {
+//        operatorIfOk(c)
+//    }
+//
+//    /**
+//     * STATE 11
+//     * Operator /=
+//     * /= in buffer
+//     */
+//    private fun operatorSlashEquals(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 12
@@ -856,20 +907,24 @@ class Lexer(fileName: String) {
      */
     private fun roofSign(c: Char) {
         when {
-            c == '=' -> goto(13, c)
-            isRegular(c) -> goto(6, c)
+            c == '=' -> operatorIfOk(c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 13
-     * ^= Operator
-     * ^= in buffer
-     */
-    private fun roofEqualsOperator(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 13
+//     * ^= Operator
+//     * ^= in buffer
+//     */
+//    private fun roofEqualsOperator(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 15
@@ -878,20 +933,24 @@ class Lexer(fileName: String) {
      */
     private fun plus(c: Char) {
         when {
-            c == '+' || c == '=' -> goto(16, c)
-            isRegular(c) -> goto(6, c)
+            c == '+' || c == '=' -> operatorIfOk(c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 16
-     * ++ OR += operator
-     * ++ OR += in buffer
-     */
-    private fun plusAndPlusOrEquals(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 16
+//     * ++ OR += operator
+//     * ++ OR += in buffer
+//     */
+//    private fun plusAndPlusOrEquals(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 17
@@ -900,20 +959,24 @@ class Lexer(fileName: String) {
      */
     private fun minus(c: Char) {
         when {
-            c == '-' || c == '>' || c == '=' -> goto(19, c)
-            isRegular(c) -> goto(6, c)
+            c == '-' || c == '>' || c == '=' -> operatorIfOk(c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 19
-     * Operators --, -= and ->
-     * -- OR -= OR -> in buffer
-     */
-    private fun minusAndSomething(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 19
+//     * Operators --, -= and ->
+//     * -- OR -= OR -> in buffer
+//     */
+//    private fun minusAndSomething(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 22
@@ -923,7 +986,11 @@ class Lexer(fileName: String) {
     private fun exclamationMark(c: Char) {
         when {
             c == '=' -> goto(23, c)
-            isRegular(c) -> goto(6, c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
@@ -935,20 +1002,24 @@ class Lexer(fileName: String) {
      */
     private fun exclamationMarkAndEquals(c: Char) {
         when {
-            c == '=' -> goto(24, c)
-            isRegular(c) -> goto(6, c)
+            c == '=' -> operatorIfOk(c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 24
-     * Operator !==
-     * !== in buffer
-     */
-    private fun exclamationMarkAndDoubleEquals(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 24
+//     * Operator !==
+//     * !== in buffer
+//     */
+//    private fun exclamationMarkAndDoubleEquals(c: Char) {
+//        operatorIfOk(c)
+//    }
 
 
     /**
@@ -959,7 +1030,11 @@ class Lexer(fileName: String) {
     private fun dot(c: Char) {
         when {
             c == '.' -> goto(27, c)
-            isRegular(c) -> goto(6, c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
@@ -971,19 +1046,23 @@ class Lexer(fileName: String) {
      */
     private fun dotDot(c: Char) {
         when {
-            c == '.' || c == '<' -> goto(6, c)
+            c == '.' || c == '<' -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 28
-     * Operators ... OR ..<
-     * ... OR ..< in buffer
-     */
-    private fun dotDotAndSomething(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 28
+//     * Operators ... OR ..<
+//     * ... OR ..< in buffer
+//     */
+//    private fun dotDotAndSomething(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 31
@@ -992,20 +1071,26 @@ class Lexer(fileName: String) {
      */
     private fun tilda(c: Char) {
         when {
-            c == '>' || c == '=' -> goto(32, c)
-            isRegular(c) -> goto(6, c)
+            c == '>' || c == '=' -> {
+                operatorIfOk(c)
+            }
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 32
-     * Operators ~> OR ~=
-     * ~> OR ~= in buffer
-     */
-    private fun tildaAndSomething(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 32
+//     * Operators ~> OR ~=
+//     * ~> OR ~= in buffer
+//     */
+//    private fun tildaAndSomething(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 34
@@ -1014,20 +1099,26 @@ class Lexer(fileName: String) {
      */
     private fun percent(c: Char) {
         when {
-            c == '=' -> goto(35, c)
-            isRegular(c) -> goto(6, c)
+            c == '=' -> {
+                operatorIfOk(c)
+            }
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 35
-     * Operator %=
-     * %= in buffer
-     */
-    private fun percentAndEquals(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 35
+//     * Operator %=
+//     * %= in buffer
+//     */
+//    private fun percentAndEquals(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 37
@@ -1036,20 +1127,26 @@ class Lexer(fileName: String) {
      */
     private fun vertical(c: Char) {
         when {
-            c == '|' || c == '=' -> goto(38, c)
-            isRegular(c) -> goto(6, c)
+            c == '|' || c == '=' -> {
+                operatorIfOk(c)
+            }
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 38
-     * Operators || OR |=
-     * || OR |= in buffer
-     */
-    private fun verticalAndSomething(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 38
+//     * Operators || OR |=
+//     * || OR |= in buffer
+//     */
+//    private fun verticalAndSomething(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 40
@@ -1058,20 +1155,26 @@ class Lexer(fileName: String) {
      */
     private fun star(c: Char) {
         when {
-            c == '=' -> goto(41, c)
-            isRegular(c) -> goto(6, c)
+            c == '=' -> {
+                operatorIfOk(c)
+            }
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 41
-     * Operator *=
-     * *= in buffer
-     */
-    private fun starAndEquals(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 41
+//     * Operator *=
+//     * *= in buffer
+//     */
+//    private fun starAndEquals(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 43
@@ -1080,20 +1183,26 @@ class Lexer(fileName: String) {
      */
     private fun questionMark(c: Char) {
         when {
-            c == '.' || c == '?' -> goto(44, c)
-            isRegular(c) -> goto(6, c)
+            c == '.' || c == '?' -> {
+                operatorIfOk(c)
+            }
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 44
-     * Operators ?. OR ??
-     * ?. OR ?? in buffer
-     */
-    private fun questionMarkAndSomething(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 44
+//     * Operators ?. OR ??
+//     * ?. OR ?? in buffer
+//     */
+//    private fun questionMarkAndSomething(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 46
@@ -1104,22 +1213,28 @@ class Lexer(fileName: String) {
         when {
             c == '&' || c == '=' || c == '+'
                     || c == '-' || c == '%'
-                    || c == '*' || c == '/' -> goto(47, c)
+                    || c == '*' || c == '/' -> {
+                operatorIfOk(c)
+            }
             c == '>' -> goto(48, c)
             c == '<' -> goto(49, c)
-            isRegular(c) -> goto(6, c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 47
-     * Operators && OR &= OR &+ OR &- OR &% OR &* OR &/
-     * && OR &= OR &+ OR &- OR &% OR &* OR &/ in buffer
-     */
-    private fun ampersandAndSomething(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 47
+//     * Operators && OR &= OR &+ OR &- OR &% OR &* OR &/
+//     * && OR &= OR &+ OR &- OR &% OR &* OR &/ in buffer
+//     */
+//    private fun ampersandAndSomething(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 48
@@ -1152,8 +1267,14 @@ class Lexer(fileName: String) {
      */
     private fun leftLeft(c: Char) {
         when {
-            c == '=' -> goto(54, c)
-            isRegular(c) -> goto(6, c)
+            c == '=' -> {
+                operatorIfOk(c)
+            }
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
@@ -1166,28 +1287,32 @@ class Lexer(fileName: String) {
     private fun rightRight(c: Char) {
         when {
             c == '=' -> goto(55, c)
-            isRegular(c) -> goto(6, c)
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 53
-     * Operator &<<= OR <<=
-     * &<<= OR <<= in buffer
-     */
-    private fun leftLeftEquals(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 53
+//     * Operator &<<= OR <<=
+//     * &<<= OR <<= in buffer
+//     */
+//    private fun leftLeftEquals(c: Char) {
+//        operatorIfOk(c)
+//    }
 
-    /**
-     * STATE 54
-     * Operator &>>= OR >>=
-     * &>>= OR >>= in buffer
-     */
-    private fun rightRightEquals(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 54
+//     * Operator &>>= OR >>=
+//     * &>>= OR >>= in buffer
+//     */
+//    private fun rightRightEquals(c: Char) {
+//        operatorIfOk(c)
+//    }
 
     /**
      * STATE 55
@@ -1197,8 +1322,14 @@ class Lexer(fileName: String) {
     private fun right(c: Char) {
         when {
             c == '>' -> goto(50, c)
-            c == '=' -> goto(58, c)
-            isRegular(c) -> goto(6, c)
+            c == '=' -> {
+                operatorIfOk(c)
+            }
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
@@ -1211,29 +1342,35 @@ class Lexer(fileName: String) {
     private fun left(c: Char) {
         when {
             c == '>' -> goto(50, c)
-            c == '=' -> goto(59, c)
-            isRegular(c) -> goto(6, c)
+            c == '=' -> {
+                operatorIfOk(c)
+            }
+            isRegular(c) -> {
+                reader.stepBack()
+                buffer.setLength(buffer.length - 1)
+                addToken(Token.Type.OPERATOR)
+            }
             else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 58
-     * Operator >=
-     * >= in buffer
-     */
-    private fun rightEquals(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 58
+//     * Operator >=
+//     * >= in buffer
+//     */
+//    private fun rightEquals(c: Char) {
+//        operatorIfOk(c)
+//    }
 
-    /**
-     * STATE 59
-     * Operator <=
-     * <= in buffer
-     */
-    private fun leftEquals(c: Char) {
-        operatorIfOk(c)
-    }
+//    /**
+//     * STATE 59
+//     * Operator <=
+//     * <= in buffer
+//     */
+//    private fun leftEquals(c: Char) {
+//        operatorIfOk(c)
+//    }
 
 
 }
