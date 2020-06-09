@@ -1,10 +1,14 @@
 fun main() {
-    val lexer = Lexer("bugs.txt")
+    val lexer = Lexer("text.txt")
     lexer.run()
 
     val wrapper = LexerWrapper(lexer.tokens)
 
-    wrapper.printToConsoleWrapped()
+//    wrapper.printToConsoleWrapped()
+//    wrapper.printToConsole()
+
+    wrapper.generateHtml()
+
 //    wrapper.printTokens()
 //    wrapper.printSorted()
 }

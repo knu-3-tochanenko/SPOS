@@ -1,3 +1,5 @@
+import java.io.File
+
 class LexerWrapper(
     private val tokens: MutableList<Token>
 ) {
@@ -57,6 +59,27 @@ class LexerWrapper(
         sorted.sortBy { it.type }
         for (token in sorted)
             if (token.type != Token.Type.WHITESPACE) println(token)
+    }
+
+    private val header = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Syntax Highlight</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>"""
+
+    fun generateHtml() {
+        val file = File("src/main/resources/index.html")
+        val writer = file.printWriter()
+            writer.print(header)
+        for (token in tokens) {
+            writer.print("<span class=\"${token.type.name.toLowerCase()}\">${token.string}</span>")
+        }
+        writer.print("""</body>
+</html>""")
+        writer.close()
     }
 
 }

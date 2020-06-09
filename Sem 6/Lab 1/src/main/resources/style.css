@@ -1,0 +1,39 @@
+body {
+    margin: 0;
+    padding: 16px;
+    white-space: pre;
+    color: white;
+    background: #212121;
+    font-family: "Ubuntu Mono", monospace;
+    font-size: 1.2rem;
+}
+
+.error {
+    color: #F44336;
+}
+
+.keyword, .directive {
+    color: #E040FB;
+}
+
+.comment {
+    color: #00E676;
+}
+
+.operator {
+    color: #00E5FF;
+}
+
+.separator {
+    color: #BDBDBD;
+}
+
+.primitive,
+.literal_int,
+.literal_char,
+.literal_float,
+.literal_string,
+.literal_boolean,
+.literal_null {
+    color: #FFEA00;
+}

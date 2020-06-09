@@ -1,12 +1,17 @@
 import java.util.regex.Pattern
 
-fun isRegular(c: Char) = Pattern.matches("\\w| |\\d|_|\\\$", c.toString()) || isSeparator(c)
+fun isRegular(c: Char) = isSeparator(c) || isValidChar(c) || isWhitespace(c)
 
 fun isSeparator(c: Char) = c == '(' || c == ')' || c == '{'
         || c == '}' || c == '[' || c == ']'
         || c == ';' || c == ',' || c == ':' || c == '\n'
 
-fun isPartOfIdentifier(c: Char) = Pattern.matches("\\w|\\d|_|\\\$", c.toString())
+fun isValidChar(c: Char) = Character.isJavaIdentifierPart(c) || c == '$'
+
+fun isWhitespace(c: Char) = Character.isWhitespace(c)
+
+//fun isNewLine(c: Char) = Character.isWhitespace(c) && (c != ' ' || c != '\t')
+fun isNewLine(c: Char) = c == '\n'
 
 fun isLetter(c: Char) = Pattern.matches("\\w", c.toString())
 

@@ -1,1376 +1,663 @@
+import Token.Type.*
+
 class Lexer(fileName: String) {
     private var state = 0
     private var buffer: StringBuilder = StringBuilder("")
     val tokens: MutableList<Token> = mutableListOf()
     private val reader = CodeReader(fileName)
 
-    private fun goto(state: Int, c: Char) {
-        this.state = state
-        buffer.append(c)
-    }
-
-    private fun justGo(state: Int) {
-        this.state = state
-    }
-
     private fun addToken(type: Token.Type) {
         tokens.add(Token(buffer.toString(), type))
-        buffer = StringBuilder("")
+        buffer.clear()
         state = 0
     }
 
-    private fun operatorIfOk(c: Char) {
-        println("Current string $buffer for $c")
-        when {
-            isRegular(c) -> {
-                reader.stepBack()
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
+    private fun stepBackAndAddToken(type: Token.Type) {
+        reader.stepBack()
+        tokens.add(Token(buffer.substring(0, buffer.length - 1), type))
+        buffer.clear()
+        state = 0
+    }
+
+    private fun goto(state: Int, c: Char) {
+        this.state = state
+//        buffer.append(c)
+    }
+
+    private fun goto(state: Int) {
+        this.state = state
     }
 
     fun run() {
-
-        // TODO: #"..."#
-        // TODO: #something
-
-        // TODO: Numbers
-        // TODO: Strings and char literals
-
         var c = reader.next()
         while (c != 0.toChar()) {
+            buffer.append(c)
             when (state) {
-                -1 -> errorState(c)
-                0 -> startState(c)
-                1 -> slash(c)
-                2 -> singleLineComment(c)
-                3 -> beginMultilineComment(c)
-                4 -> maybeEndOfMultilineComment(c)
-//                5 -> endOfMultilineComment(c)
-//                6 -> operator(c)
-                7 -> equalsSign(c)
-                8 -> doubleEquals(c)
-//                9 -> tripleEquals(c)
-//                11 -> operatorSlashEquals(c)
-                12 -> roofSign(c)
-//                13 -> roofEqualsOperator(c)
-                15 -> plus(c)
-//                16 -> plusAndPlusOrEquals(c)
-                17 -> minus(c)
-//                19 -> minusAndSomething(c)
-                22 -> exclamationMark(c)
-                23 -> exclamationMarkAndEquals(c)
-//                24 -> exclamationMarkAndDoubleEquals(c)
-                26 -> dot(c)
-                27 -> dotDot(c)
-//                28 -> dotDotAndSomething(c)
-                31 -> tilda(c)
-//                32 -> tildaAndSomething(c)
-                34 -> percent(c)
-//                35 -> percentAndEquals(c)
-                37 -> vertical(c)
-//                38 -> verticalAndSomething(c)
-                40 -> star(c)
-//                41 -> starAndEquals(c)
-                43 -> questionMark(c)
-//                44 -> questionMarkAndSomething(c)
-                46 -> ampersand(c)
-//                47 -> ampersandAndSomething(c)
-                48 -> ampersandAndRight(c)
-                49 -> ampersandAndLeft(c)
-                50 -> leftLeft(c)
-                51 -> rightRight(c)
-//                53 -> leftLeftEquals(c)
-//                54 -> rightRightEquals(c)
-                55 -> right(c)
-                56 -> left(c)
-//                58 -> rightEquals(c)
-//                59 -> leftEquals(c)
+                0 -> state0(c)
+                1 -> state1(c)
+                2 -> state2(c)
+                3 -> state3(c)
+                4 -> state4(c)
+                5 -> state5(c)
+                6 -> state6(c)
+                7 -> state7(c)
+                8 -> state8(c)
+                9 -> state9(c)
+                10 -> state10(c)
+                11 -> state11(c)
+                12 -> state12(c)
+                13 -> state13(c)
+                14 -> state14(c)
+                15 -> state15(c)
+                16 -> state16(c)
+                17 -> state17(c)
+                18 -> state18(c)
+                19 -> state19(c)
+                20 -> state20(c)
+                21 -> state21(c)
+                22 -> state22(c)
+                23 -> state23(c)
+                24 -> state24(c)
+                25 -> state25(c)
+                26 -> state26(c)
+                27 -> state27(c)
+                29 -> state29(c)
+                30 -> state30(c)
+                31 -> state31(c)
+                32 -> state32(c)
+                33 -> state33(c)
+                35 -> state35(c)
+                36 -> state36(c)
+                37 -> state37(c)
+                38 -> state38(c)
+                39 -> state39(c)
+                40 -> state40(c)
+                41 -> state41(c)
+                42 -> state42(c)
+                43 -> state43(c)
+                44 -> state44(c)
+                46 -> state46(c)
+                47 -> state47(c)
+                48 -> state48(c)
+                49 -> state49(c)
+                50 -> state50(c)
+                52 -> state52(c)
+                53 -> state53(c)
+                54 -> state54(c)
+                55 -> state55(c)
+                56 -> state56(c)
+                57 -> state57(c)
+                58 -> state58(c)
+                59 -> state59(c)
+                60 -> state60(c)
+                61 -> state61(c)
+                62 -> state62(c)
+                63 -> state63(c)
+                64 -> state64(c)
+                65 -> state65(c)
+                66 -> state66(c)
+                67 -> state67(c)
+                68 -> state68(c)
 
-                // Identifiers
-                100 -> identifier(c)
-
-                // Number Literals
-                101 -> zeroDigit(c)
-                102 -> binaryDigits(c)
-                103 -> octalDigits(c)
-                104 -> hexDigits(c)
-                105 -> decimalDigits(c)
-                106 -> decimalWithDot(c)
-                107 -> decimalWithDotAndDecimals(c)
-                108 -> decimalWithE(c)
-                109 -> floatDecimalWithSign(c)
-                110 -> floatDecimal(c)
-                111 -> hexAndDot(c)
-                112 -> hexFloat(c)
-                113 -> hexAndP(c)
-                114 -> hexAndPAndHex(c)
-                115 -> hexAndPAndSymbol(c)
-                116 -> hexDigitsFull(c)
-                117 -> octalDigitsFull(c)
-                118 -> binaryDigitsFull(c)
-//                119 -> floatLiteral(c)
-//                120 -> integerLiteral(c)
-
-                // String Literals
-                200 -> rawString(c)
-                202 -> rawStringOne(c)
-                203 -> rawStringTwo(c)
-                204 -> rawStringThree(c)
-                205 -> rawStringFour(c)
-                206 -> rawStringFive(c)
-                207 -> rawStringSix(c)
-                208 -> stringLiteral(c)
-                209 -> stringOne(c)
-                210 -> stringTwo(c)
-                211 -> singleCharOpen(c)
-                212 -> singleCharBeforeClosed(c)
-                213 -> singleCharAddSpecial(c)
-                214 -> directive(c)
-                215 -> basicString(c)
-                216 -> basicStringTwo(c)
-                217 -> basicStringThree(c)
-                218 -> basicStringFour(c)
-                219 -> basicStringFive(c)
-                221 -> simpleBasicString(c)
-                222 -> specialCharSimple(c)
-//                223 -> charLiteral(c)
-                224 -> specialCharCompl(c)
-
-
-                else -> {
-                    print("Error state of $state. Please check scheme again.")
-                }
             }
-            print(c)
             c = reader.next()
         }
     }
 
-    /**
-     * STATE -1
-     * Error State
-     */
-    private fun errorState(c: Char) {
-        reader.stepBack()
-        addToken(Token.Type.ERROR)
-        buffer.append(c)
-    }
-
-    /**
-     * STATE 0
-     * Starting State
-     * Buffer is empty
-     */
-    private fun startState(c: Char) {
-        // TODO
+    private fun state0(c: Char) {
         when {
-            Character.isWhitespace(c) -> {
-                tokens.add(Token(c.toString(), Token.Type.WHITESPACE))
-                buffer = StringBuilder("")
-                state = 0
-            }
-            c == '0' -> goto(101, c)
-            isDecimal(c) && c != '0' -> goto(105, c)
-            c == '.' -> {
-                tokens.add(Token(c.toString(), Token.Type.OPERATOR))
-                buffer = StringBuilder("")
-                state = 0
-            }
-            isPartOfIdentifier(c) -> goto(100, c)
-            isSeparator(c) -> {
-                tokens.add(Token(c.toString(), Token.Type.SEPARATOR))
-                buffer = StringBuilder("")
-                state = 0
-            }
-            c == '/' -> goto(1, c)
-            c == '=' -> goto(7, c)
-            c == '^' -> goto(12, c)
-            c == '+' -> goto(15, c)
-            c == '-' -> goto(17, c)
-            c == '!' -> goto(22, c)
-            c == '.' -> goto(26, c)
-            c == '~' -> goto(31, c)
-            c == '%' -> goto(34, c)
-            c == '|' -> goto(37, c)
-            c == '*' -> goto(40, c)
-            c == '?' -> goto(43, c)
-            c == '&' -> goto(46, c)
-            c == '>' -> goto(55, c)
-            c == '<' -> goto(56, c)
-            c == '#' -> goto(200, c)
-            c == '\'' -> goto(211, c)
-            c == '"' -> goto(215, c)
-            else -> goto(0, c)
+            isWhitespace(c) -> addToken(WHITESPACE)
+            c == '/' -> goto(1)
+            c == '!' || c == '=' -> goto(6)
+            c == '+' -> goto(8)
+            c == '&' -> goto(9)
+            c == '-' -> goto(10)
+            c == '?' -> goto(11)
+            c == '*' -> goto(12)
+            c == '%' -> goto(13)
+            c == '~' -> goto(15)
+            c == '>' -> goto(17)
+            c == '<' -> goto(18)
+            c == '.' -> goto(23)
+            c == '\'' -> goto(25)
+            c == '"' -> goto(29)
+            c == '#' -> goto(38)
+            c == '0' -> goto(49)
+            isDecimal(c) && c != '0' -> goto(53)
+            isValidChar(c) -> goto(67)
+            isSeparator(c) -> addToken(SEPARATOR)
+            isOperator(c) -> addToken(OPERATOR)
         }
     }
 
-    /**
-     * STATE 100
-     * IDENTIFIERS
-     */
-    private fun identifier(c: Char) {
+    private fun state1(c: Char) {
         when {
-            isPartOfIdentifier(c) -> goto(100, c)
-            Character.isWhitespace(c) || isOperator(c) || isSeparator(c) -> {
-                when {
-                    isNil(buffer.toString()) -> addToken(Token.Type.LITERAL_NULL)
-                    isBoolean(buffer.toString()) -> addToken(Token.Type.LITERAL_BOOLEAN)
-                    isPrimitive(buffer.toString()) -> addToken(Token.Type.PRIMITIVE)
-                    isKeyword(buffer.toString()) -> addToken(Token.Type.KEYWORD)
-                    else -> addToken(Token.Type.IDENTIFIER)
-                }
-                reader.stepBack()
-            }
-            else -> justGo(-1)
+            c == '/' -> goto(2)
+            c == '=' -> goto(3)
+            c == '*' -> goto(4)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 101
-     * 0 in buffer
-     */
-    private fun zeroDigit(c: Char) {
+    private fun state2(c: Char) {
         when {
-            c == 'b' -> goto(102, c)
-            c == 'o' -> goto(103, c)
-            c == 'x' -> goto(104, c)
-            c == '.' -> goto(106, c)
-            isDecimal(c) -> goto(105, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
-                reader.stepBack()
-                addToken(Token.Type.LITERAL_INT)
-            }
-            else -> justGo(-1)
+            isNewLine(c) -> stepBackAndAddToken(COMMENT)
+            else -> goto(2)
         }
     }
 
-    /**
-     * STATE 102
-     * 0b in buffer
-     */
-    private fun binaryDigits(c: Char) {
+    private fun state3(c: Char) {
         when {
-            c == '0' || c == '1' -> goto(118, c)
-            else -> justGo(-1)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 103
-     * 0o in buffer
-     */
-    private fun octalDigits(c: Char) {
+    private fun state4(c: Char) {
         when {
-            isOctal(c) -> goto(117, c)
-            else -> justGo(-1)
+            c == '*' -> goto(5)
+            else -> goto(4)
         }
     }
 
-    /**
-     * STATE 104
-     * 0x in buffer
-     */
-    private fun hexDigits(c: Char) {
+    private fun state5(c: Char) {
         when {
-            isHex(c) -> goto(116, c)
-            else -> justGo(-1)
+            c == '/' -> addToken(COMMENT)
+            else -> goto(4)
         }
     }
 
-    /**
-     * STATE 105
-     * 0..9 in buffer
-     */
-    private fun decimalDigits(c: Char) {
+    private fun state6(c: Char) {
         when {
-            isDecimal(c) -> goto(105, c)
-            c == '.' -> goto(106, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
-                reader.stepBack()
-                addToken(Token.Type.LITERAL_INT)
-            }
-            c == 'e' || c == 'E' -> goto(108, c)
-            else -> justGo(-1)
+            c == '=' -> goto(7)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 106
-     * 0..9. in buffer
-     */
-    private fun decimalWithDot(c: Char) {
+    private fun state7(c: Char) {
         when {
-            isDecimal(c) -> goto(107, c)
-            else -> justGo(-1)
+            c == '=' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 107
-     * 0..9.0..9 in buffer
-     */
-    private fun decimalWithDotAndDecimals(c: Char) {
+    private fun state8(c: Char) {
         when {
-            isDecimal(c) -> goto(107, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
-                reader.stepBack()
-                addToken(Token.Type.LITERAL_FLOAT)
-            }
-            c == 'e' || c == 'E' -> goto(108, c)
-            else -> justGo(-1)
+            c == '+' || c == '=' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 108
-     * decimal with e in buffer
-     */
-    private fun decimalWithE(c: Char) {
+    private fun state9(c: Char) {
         when {
-            isDecimal(c) -> goto(110, c)
-            c == '+' || c == '-' -> goto(109, c)
-            else -> justGo(-1)
+            c == '=' || c == '&' -> goto(3)
+            c == '+' -> goto(8)
+            c == '-' -> goto(10)
+            c == '*' -> goto(12)
+            c == '%' -> goto(13)
+            c == '>' -> goto(21)
+            c == '<' -> goto(22)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 109
-     * float decimal with something in buffer
-     */
-    private fun floatDecimalWithSign(c: Char) {
+    private fun state10(c: Char) {
         when {
-            isDecimal(c) -> goto(110, c)
-            else -> justGo(-1)
+            c == '-' || c == '=' || c == '>' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 110
-     * float decimal in buffer
-     */
-    private fun floatDecimal(c: Char) {
+    private fun state11(c: Char) {
         when {
-            isDecimal(c) -> goto(110, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
-                reader.stepBack()
-                addToken(Token.Type.LITERAL_FLOAT)
-            }
-            else -> justGo(-1)
+            c == '?' || c == '.' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 111
-     * 0x.. . in buffer
-     */
-    private fun hexAndDot(c: Char) {
+    private fun state12(c: Char) {
         when {
-            isHex(c) -> goto(112, c)
-            else -> justGo(-1)
+            c == '=' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 112
-     * 0x... . . in buffer
-     */
-    private fun hexFloat(c: Char) {
+    private fun state13(c: Char) {
         when {
-            c == 'p' || c == 'P' -> goto(113, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
-                reader.stepBack()
-                addToken(Token.Type.LITERAL_FLOAT)
-            }
-            isHex(c) -> goto(112, c)
-            else -> justGo(-1)
+            c == '=' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 113
-     * 0x.. . .. pP in buffer
-     */
-    private fun hexAndP(c: Char) {
+    private fun state14(c: Char) {
         when {
-            c == '+' || c == '-' -> goto(115, c)
-            isHex(c) -> goto(114, c)
-            else -> justGo(-1)
+            c == '=' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 114
-     * 0x.. . .. pP in buffer
-     */
-    private fun hexAndPAndHex(c: Char) {
+    private fun state15(c: Char) {
         when {
-            isHex(c) -> goto(114, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
-                reader.stepBack()
-                addToken(Token.Type.LITERAL_FLOAT)
-            }
-            else -> justGo(-1)
+            c == '>' || c == '=' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 115
-     * 0x.. . .. pP+-.. in buffer
-     */
-    private fun hexAndPAndSymbol(c: Char) {
+    private fun state16(c: Char) {
         when {
-            isHex(c) -> goto(114, c)
-            else -> justGo(-1)
+            c == '=' || c == '|' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 116
-     * 0x.. in buffer
-     */
-    private fun hexDigitsFull(c: Char) {
+    private fun state17(c: Char) {
         when {
-            isHex(c) -> goto(116, c)
-            c == '.' -> goto(111, c)
-            c == 'p' || c == 'P' -> goto(113, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
-                reader.stepBack()
-                addToken(Token.Type.LITERAL_FLOAT)
-            }
-            else -> justGo(-1)
+            c == '>' -> goto(19)
+            c == '=' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 117
-     * 0o.. in buffer
-     */
-    private fun octalDigitsFull(c: Char) {
+    private fun state18(c: Char) {
         when {
-            isOctal(c) -> goto(117, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
-                reader.stepBack()
-                addToken(Token.Type.LITERAL_INT)
-            }
-            else -> justGo(-1)
+            c == '<' -> goto(20)
+            c == '=' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 118
-     * 0b.. in buffer
-     */
-    private fun binaryDigitsFull(c: Char) {
+
+    private fun state19(c: Char) {
         when {
-            c == '0' || c == '1' -> goto(118, c)
-            isOperator(c) || isSeparator(c) || Character.isWhitespace(c) -> {
-                reader.stepBack()
-                addToken(Token.Type.LITERAL_INT)
-            }
-            else -> justGo(-1)
+            c == '=' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-//    /**
-//     * STATE 119
-//     * FLOAT LITERAL
-//     */
-//    private fun floatLiteral(c: Char) {
-////        reader.stepBack()
-//        reader.stepBack()
-//        addToken(Token.Type.LITERAL_FLOAT)
-//    }
-//
-//    /**
-//     * STATE 120
-//     * INTEGER LITERAL
-//     */
-//    private fun integerLiteral(c: Char) {
-////        reader.stepBack()
-//        reader.stepBack()
-//        addToken(Token.Type.LITERAL_INT)
-//    }
-
-    /**
-     * STATE 200
-     * RAW COMMENT
-     * # in buffer
-     */
-    private fun rawString(c: Char) {
+    private fun state20(c: Char) {
         when {
-            c == '"' -> goto(202, c)
-            isPartOfIdentifier(c) -> goto(214, c)
-            else -> justGo(-1)
+            c == '-' -> goto(3)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 202
-     * #" in buffer
-     */
-    private fun rawStringOne(c: Char) {
+    private fun state21(c: Char) {
         when {
-            c == '"' -> goto(203, c)
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            else -> goto(209, c)
+            c == '>' -> goto(19)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 203
-     * #"" in buffer
-     */
-    private fun rawStringTwo(c: Char) {
+    private fun state22(c: Char) {
         when {
-            c == '"' -> goto(204, c)
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            else -> goto(209, c)
+            c == '<' -> goto(19)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 204
-     * #""" and symbols in buffer
-     */
-    private fun rawStringThree(c: Char) {
+    private fun state23(c: Char) {
         when {
-            c == '"' -> goto(205, c)
-            else -> goto(204, c)
+            c == '.' -> goto(24)
+            isRegular(c) -> stepBackAndAddToken(OPERATOR)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 205
-     * #""" ... " in buffer
-     */
-    private fun rawStringFour(c: Char) {
+    private fun state24(c: Char) {
         when {
-            c == '"' -> goto(206, c)
-            else -> goto(204, c)
+            c == '.' || c == '<' -> goto(3)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 206
-     * #""" ... "" in buffer
-     */
-    private fun rawStringFive(c: Char) {
+    private fun state25(c: Char) {
         when {
-            c == '"' -> goto(207, c)
-            else -> goto(204, c)
+            c == '\\' -> goto(27)
+            isNewLine(c) -> stepBackAndAddToken(ERROR)
+            else -> goto(26)
+        }
+    }
+    
+    private fun state26(c: Char) {
+        when {
+            c == '\'' -> addToken(LITERAL_CHAR)
+            else -> stepBackAndAddToken(ERROR)
+        }
+    }
+    
+    private fun state27(c: Char) {
+        when {
+            isNewLine(c) || c == '\\' -> stepBackAndAddToken(ERROR)
+            else -> goto(26)
+        }
+    }
+    
+    private fun state29(c: Char) {
+        when {
+            c == '"' -> goto(30)
+            isNewLine(c) -> stepBackAndAddToken(ERROR)
+            c == '\\' -> goto(36)
+            else -> goto(35)
+        }
+    }
+    
+    private fun state30(c: Char) {
+        when {
+            c == '"' -> goto(31)
+            c == '\\' -> goto(36)
+            isRegular(c) -> stepBackAndAddToken(LITERAL_STRING)
+            else -> stepBackAndAddToken(ERROR)
+        }
+    }
+    
+    private fun state31(c: Char) {
+        when {
+            c == '"' -> goto(32)
+            c == '\\' -> goto(37)
+            else -> goto(31)
+        }
+    }
+    
+    private fun state32(c: Char) {
+        when {
+            c == '"' -> goto(33)
+            c == '\\' -> goto(37)
+            else -> goto(31)
+        }
+    }
+    
+    private fun state33(c: Char) {
+        when {
+            c == '"' -> addToken(LITERAL_STRING)
+            c == '\\' -> goto(37)
+            else -> goto(31)
+        }
+    }
+    
+    private fun state35(c: Char) {
+        when {
+            isNewLine(c) -> stepBackAndAddToken(ERROR)
+            c == '\\' -> goto(36)
+            c == '"' -> addToken(LITERAL_STRING)
+            else -> goto(35)
+        }
+    }
+    
+    private fun state36(c: Char) {
+        when {
+            isWhitespace(c) -> stepBackAndAddToken(ERROR)
+            else -> goto(35)
+        }
+    }
+    
+    private fun state37(c: Char) {
+        when {
+            isWhitespace(c) -> stepBackAndAddToken(ERROR)
+            else -> goto(31)
+        }
+    }
+    
+    private fun state38(c: Char) {
+        when {
+            c == '"' -> goto(39)
+            isValidChar(c) -> goto(48)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 207
-     * #""" ... """ in buffer
-     */
-    private fun rawStringSix(c: Char) {
+    private fun state39(c: Char) {
         when {
-            c == '#' -> goto(208, c)
-            else -> goto(204, c)
+            c == '"' -> goto(40)
+            isNewLine(c) -> stepBackAndAddToken(ERROR)
+            else -> goto(46)
         }
     }
 
-    /**
-     * STATE 208
-     * #""" ... """# in buffer
-     */
-    private fun stringLiteral(c: Char) {
-        if (isSeparator(c) || isOperator(c) || Character.isWhitespace(c)) {
-            reader.stepBack()
-            addToken(Token.Type.LITERAL_STRING)
-        } else {
-            reader.stepBack()
-            addToken((Token.Type.ERROR))
+    private fun state40(c: Char) {
+        when {
+            c == '"' -> goto(41)
+            c == '#' -> addToken(LITERAL_STRING)
+            isNewLine(c) -> stepBackAndAddToken(ERROR)
+            else -> goto(46)
         }
     }
 
-    /**
-     * STATE 209
-     * #" ... in string
-     */
-    private fun stringOne(c: Char) {
+    private fun state41(c: Char) {
         when {
-            c == '"' -> goto(210, c)
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            else -> goto(209, c)
+            c == '"' -> goto(42)
+            else -> goto(41)
         }
     }
 
-    /**
-     * STATE 210
-     * #" ... " in string
-     */
-    private fun stringTwo(c: Char) {
+    private fun state42(c: Char) {
         when {
-            c == '#' -> goto(208, c)
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            else -> goto(209, c)
+            c == '"' -> goto(43)
+            else -> goto(41)
         }
     }
 
-    /**
-     * STATE 211
-     * ' in buffer
-     */
-    private fun singleCharOpen(c: Char) {
+    private fun state43(c: Char) {
         when {
-            c == '\\' -> goto(213, c)
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            else -> goto(212, c)
+            c == '"' -> goto(44)
+            else -> goto(41)
         }
     }
 
-    /**
-     * STATE 212
-     * '. OR '\. in buffer
-     */
-    private fun singleCharBeforeClosed(c: Char) {
+    private fun state44(c: Char) {
         when {
-            c == '\'' -> {
-//                reader.stepBack()
-                addToken(Token.Type.LITERAL_CHAR)
-            }
-            else -> justGo(-1)
+            c == '#' -> addToken(LITERAL_STRING)
+            else -> goto(41)
         }
     }
 
-    /**
-     * STATE 213
-     * '\ in buffer
-     */
-    private fun singleCharAddSpecial(c: Char) {
+    private fun state46(c: Char) {
         when {
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            else -> goto(212, c)
+            c == '"' -> goto(47)
+            isNewLine(c) -> stepBackAndAddToken(ERROR)
+            else -> goto(46)
         }
     }
 
-    /**
-     * STATE 214
-     * #aA in buffer
-     */
-    private fun directive(c: Char) {
+    private fun state47(c: Char) {
         when {
-            isSeparator(c) || Character.isWhitespace(c) -> {
-                reader.stepBack()
-                if (isDirective(buffer.substring(1)))
-                    addToken(Token.Type.DIRECTIVE)
+            c == '#' -> addToken(LITERAL_STRING)
+            isNewLine(c) -> stepBackAndAddToken(ERROR)
+            else -> goto(46)
+        }
+    }
+
+    private fun state48(c: Char) {
+        when {
+            isWhitespace(c) || isSeparator(c) || isOperator(c) -> {
+                if (isDirective(buffer.substring(1, buffer.length - 1)))
+                    stepBackAndAddToken(DIRECTIVE)
                 else
-                    addToken(Token.Type.ERROR)
+                    stepBackAndAddToken(ERROR)
             }
-            isPartOfIdentifier(c) -> goto(214, c)
-            else -> justGo(-1)
+            isValidChar(c) -> goto(48)
         }
     }
 
-    /**
-     * STATE 215
-     * " in buffer
-     */
-    private fun basicString(c: Char) {
+    private fun state49(c: Char) {
         when {
-            c == '"' -> goto(216, c)
-            c == '\\' -> goto(222, c)
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            else -> goto(221, c)
+            c == 'b' -> goto(50)
+            c == 'o' -> goto(51)
+            c == 'x' -> goto(52)
+            c == '.' -> goto(61)
+            isDecimal(c) -> goto(53)
+            isSeparator(c) || isWhitespace(c) || isOperator(c) -> stepBackAndAddToken(LITERAL_INT)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 216
-     * "" in buffer
-     */
-    private fun basicStringTwo(c: Char) {
+    private fun state50(c: Char) {
         when {
-            c == '"' -> goto(217, c)
-            c == '\\' -> goto(222, c)
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            else -> goto(221, c)
+            c == '0' || c == '1' -> goto(66)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 217
-     * """ in buffer
-     */
-    private fun basicStringThree(c: Char) {
+    private fun state52(c: Char) {
         when {
-            c == '"' -> goto(218, c)
-            c == '\\' -> goto(224, c)
-            else -> goto(217, c)
+            isHex(c) -> goto(55)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 218
-     * """ ... " in buffer
-     */
-    private fun basicStringFour(c: Char) {
+    private fun state53(c: Char) {
         when {
-            c == '"' -> goto(219, c)
-            else -> goto(217, c)
+            isDecimal(c) -> goto(53)
+            c == '.' -> goto(61)
+            c == 'e' || c == 'E' -> goto(63)
+            isSeparator(c) || isWhitespace(c) || isOperator(c) -> stepBackAndAddToken(LITERAL_INT)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 219
-     * """ ... "" in buffer
-     */
-    private fun basicStringFive(c: Char) {
+    private fun state54(c: Char) {
         when {
-            c == '"' -> goto(208, c)
-            else -> goto(217, c)
+            isOctal(c) -> goto(54)
+            isSeparator(c) || isWhitespace(c) || isOperator(c) -> stepBackAndAddToken(LITERAL_INT)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 221
-     * " ... in buffer
-     */
-    private fun simpleBasicString(c: Char) {
+    private fun state55(c: Char) {
         when {
-            c == '"' -> goto(208, c)
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            c == '\\' -> goto(222, c)
-            else -> goto(221, c)
+            isHex(c) -> goto(55)
+            c == '.' -> goto(56)
+            c == 'p' || c == 'P' -> goto(58)
+            isSeparator(c) || isWhitespace(c) || isOperator(c) -> stepBackAndAddToken(LITERAL_INT)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-    /**
-     * STATE 222
-     * " .... \ in buffer
-     */
-    private fun specialCharSimple(c: Char) {
+    private fun state56(c: Char) {
         when {
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> justGo(-1)
-            else -> goto(221, c)
+            isHex(c) -> goto(57)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
 
-//    /**
-//     * STATE 223
-//     * '.' OR '\.' in buffer
-//     */
-//    private fun charLiteral(c: Char) {
-//        reader.stepBack()
-//        addToken(Token.Type.LITERAL_CHAR)
-//    }
-
-    /**
-     * STATE 224
-     * """ ... \ in buffer
-     */
-    private fun specialCharCompl(c: Char) {
-        goto(217, c)
+    private fun state57(c: Char) {
+        when {
+            isHex(c) -> goto(57)
+            c == 'p' || c == 'P' -> goto(58)
+            isSeparator(c) || isWhitespace(c) || isOperator(c) -> stepBackAndAddToken(LITERAL_FLOAT)
+            else -> stepBackAndAddToken(ERROR)
+        }
     }
 
-
-    /**
-     * STATE 1
-     * / in buffer
-     */
-    private fun slash(c: Char) {
+    private fun state58(c: Char) {
         when {
-            c == '/' -> goto(2, c)
-            c == '=' -> operatorIfOk(c)
-            c == '*' -> goto(3, c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
+            c == '+' || c == '-' -> goto(60)
+            isHex(c) -> goto(59)
+            else -> stepBackAndAddToken(ERROR)
+        }
+    }
+
+    private fun state59(c: Char) {
+        when {
+            isHex(c) -> goto(59)
+            isSeparator(c) || isWhitespace(c) || isOperator(c) -> stepBackAndAddToken(LITERAL_FLOAT)
+        }
+    }
+
+    private fun state60(c: Char) {
+        when {
+            isHex(c) -> goto(59)
+            else -> stepBackAndAddToken(ERROR)
+        }
+    }
+
+    private fun state61(c: Char) {
+        when {
+            c == '.' -> goto(68)
+            isDecimal(c) -> goto(62)
+            else -> stepBackAndAddToken(ERROR)
+        }
+    }
+
+    private fun state62(c: Char) {
+        when {
+            isDecimal(c) -> goto(62)
+            c == 'e' || c == 'E' -> goto(63)
+            isSeparator(c) || isWhitespace(c) || isOperator(c) -> stepBackAndAddToken(LITERAL_FLOAT)
+            else -> stepBackAndAddToken(ERROR)
+        }
+    }
+
+    private fun state63(c: Char) {
+        when {
+            isDecimal(c) -> goto(64)
+            c == '+' || c == '-' -> goto(65)
+            else -> stepBackAndAddToken(ERROR)
+        }
+    }
+
+    private fun state64(c: Char)  {
+        when {
+            isDecimal(c) -> goto(64)
+            isSeparator(c) || isWhitespace(c) || isOperator(c) -> stepBackAndAddToken(LITERAL_FLOAT)
+            else -> stepBackAndAddToken(ERROR)
+        }
+    }
+
+    private fun state65(c: Char) {
+        when {
+            isDecimal(c) -> goto(64)
+            else -> stepBackAndAddToken(ERROR)
+        }
+    }
+
+    private fun state66(c: Char) {
+        when {
+            isBinary(c) -> goto(66)
+            isSeparator(c) || isWhitespace(c) || isOperator(c) -> stepBackAndAddToken(LITERAL_FLOAT)
+            else -> stepBackAndAddToken(ERROR)
+        }
+    }
+
+    private fun state67(c: Char) {
+        when {
+            isValidChar(c) -> goto(67)
+            else -> {
+                when {
+                    isBoolean(buffer.substring(0, buffer.length - 1)) -> stepBackAndAddToken(LITERAL_BOOLEAN)
+                    isNil(buffer.substring(0, buffer.length - 1)) -> stepBackAndAddToken(LITERAL_NULL)
+                    isPrimitive(buffer.substring(0, buffer.length - 1))
+                            || isKeyword(buffer.substring(0, buffer.length - 1)) -> stepBackAndAddToken(KEYWORD)
+                    else -> stepBackAndAddToken(IDENTIFIER)
+                }
             }
-            else -> justGo(-1)
         }
     }
 
-    /**
-     * STATE 2
-     * // in buffer
-     */
-    private fun singleLineComment(c: Char) {
-        when {
-            Character.isWhitespace(c) && (c != ' ' || c != '\t') -> {
-                addToken(Token.Type.COMMENT)
-            }
-            else -> goto(2, c)
-        }
-    }
-
-    /**
-     * STATE 3
-     * Begin of comment
-     * /\* in buffer
-     */
-    private fun beginMultilineComment(c: Char) {
-        when {
-            c == '*' -> goto(4, c)
-            else -> goto(3, c)
-        }
-    }
-
-    /**
-     * STATE 4
-     * Maybe end of multiline comment
-     * / * ... * in buffer
-     */
-    private fun maybeEndOfMultilineComment(c: Char) {
-        when {
-            c == '/' -> {
-                addToken(Token.Type.COMMENT)
-            }
-            else -> goto(3, c)
-        }
-    }
-
-//    /**
-//     * STATE 5, 20
-//     * End of multiline comment OR End of single-line comment
-//     * / * .... * in buffer OR //, text and newline in buffer
-//     */
-//    private fun endOfMultilineComment(c: Char) {
-//        addToken(Token.Type.COMMENT)
-//    }
-
-//    /**
-//     * STATE 6, 10, 14, 18, 29
-//     * Operators
-//     * Operator and one char in buffer
-//     */
-//    private fun operator(c: Char) {
-//        reader.stepBack()
-//        buffer.setLength(buffer.length - 1)
-//        addToken(Token.Type.OPERATOR)
-//    }
-
-    /**
-     * STATE 7
-     * Equals sign
-     * = in buffer
-     */
-    private fun equalsSign(c: Char) {
-        when {
-            c == '=' -> goto(8, c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-    /**
-     * STATE 8
-     * Double equals sign
-     * == in buffer
-     */
-    private fun doubleEquals(c: Char) {
-        when {
-            c == '=' -> operatorIfOk(c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 9
-//     * Triple equals sign
-//     * === in buffer
-//     */
-//    private fun tripleEquals(c: Char) {
-//        operatorIfOk(c)
-//    }
-//
-//    /**
-//     * STATE 11
-//     * Operator /=
-//     * /= in buffer
-//     */
-//    private fun operatorSlashEquals(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 12
-     * Roof sign
-     * ^ in buffer
-     */
-    private fun roofSign(c: Char) {
-        when {
-            c == '=' -> operatorIfOk(c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 13
-//     * ^= Operator
-//     * ^= in buffer
-//     */
-//    private fun roofEqualsOperator(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 15
-     * + sign
-     * + in buffer
-     */
-    private fun plus(c: Char) {
-        when {
-            c == '+' || c == '=' -> operatorIfOk(c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 16
-//     * ++ OR += operator
-//     * ++ OR += in buffer
-//     */
-//    private fun plusAndPlusOrEquals(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 17
-     * Operator -
-     * - in buffer
-     */
-    private fun minus(c: Char) {
-        when {
-            c == '-' || c == '>' || c == '=' -> operatorIfOk(c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 19
-//     * Operators --, -= and ->
-//     * -- OR -= OR -> in buffer
-//     */
-//    private fun minusAndSomething(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 22
-     * Operator !
-     * ! in buffer
-     */
-    private fun exclamationMark(c: Char) {
-        when {
-            c == '=' -> goto(23, c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-    /**
-     * STATE 23
-     * Operator !=
-     * != in buffer
-     */
-    private fun exclamationMarkAndEquals(c: Char) {
-        when {
-            c == '=' -> operatorIfOk(c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 24
-//     * Operator !==
-//     * !== in buffer
-//     */
-//    private fun exclamationMarkAndDoubleEquals(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-
-    /**
-     * STATE 26
-     * Operator .
-     * . in buffer
-     */
-    private fun dot(c: Char) {
-        when {
-            c == '.' -> goto(27, c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-    /**
-     * STATE 27
-     * Operator ..
-     * .. in buffer
-     */
-    private fun dotDot(c: Char) {
+    private fun state68(c: Char) {
         when {
             c == '.' || c == '<' -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
+                tokens.add(Token(buffer.substring(0, buffer.length - 3), LITERAL_INT))
+                tokens.add(Token(buffer.substring(buffer.length - 3), OPERATOR))
+                buffer.clear()
+                state = 0
             }
-            else -> justGo(-1)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
-
-//    /**
-//     * STATE 28
-//     * Operators ... OR ..<
-//     * ... OR ..< in buffer
-//     */
-//    private fun dotDotAndSomething(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 31
-     * Operator ~
-     * ~ in buffer
-     */
-    private fun tilda(c: Char) {
-        when {
-            c == '>' || c == '=' -> {
-                operatorIfOk(c)
-            }
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 32
-//     * Operators ~> OR ~=
-//     * ~> OR ~= in buffer
-//     */
-//    private fun tildaAndSomething(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 34
-     * Operator %
-     * % in buffer
-     */
-    private fun percent(c: Char) {
-        when {
-            c == '=' -> {
-                operatorIfOk(c)
-            }
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 35
-//     * Operator %=
-//     * %= in buffer
-//     */
-//    private fun percentAndEquals(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 37
-     * Operator |
-     * | in buffer
-     */
-    private fun vertical(c: Char) {
-        when {
-            c == '|' || c == '=' -> {
-                operatorIfOk(c)
-            }
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 38
-//     * Operators || OR |=
-//     * || OR |= in buffer
-//     */
-//    private fun verticalAndSomething(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 40
-     * Operator *
-     * * in buffer
-     */
-    private fun star(c: Char) {
-        when {
-            c == '=' -> {
-                operatorIfOk(c)
-            }
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 41
-//     * Operator *=
-//     * *= in buffer
-//     */
-//    private fun starAndEquals(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 43
-     * Operator ?
-     * ? in buffer
-     */
-    private fun questionMark(c: Char) {
-        when {
-            c == '.' || c == '?' -> {
-                operatorIfOk(c)
-            }
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 44
-//     * Operators ?. OR ??
-//     * ?. OR ?? in buffer
-//     */
-//    private fun questionMarkAndSomething(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 46
-     * Operator &
-     * & in buffer
-     */
-    private fun ampersand(c: Char) {
-        when {
-            c == '&' || c == '=' || c == '+'
-                    || c == '-' || c == '%'
-                    || c == '*' || c == '/' -> {
-                operatorIfOk(c)
-            }
-            c == '>' -> goto(48, c)
-            c == '<' -> goto(49, c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 47
-//     * Operators && OR &= OR &+ OR &- OR &% OR &* OR &/
-//     * && OR &= OR &+ OR &- OR &% OR &* OR &/ in buffer
-//     */
-//    private fun ampersandAndSomething(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 48
-     * Part of operator &>
-     * &> in buffer
-     */
-    private fun ampersandAndRight(c: Char) {
-        when {
-            c == '>' -> goto(50, c)
-            else -> justGo(-1)
-        }
-    }
-
-    /**
-     * STATE 49
-     * Part of operator &<
-     * &< in buffer
-     */
-    private fun ampersandAndLeft(c: Char) {
-        when {
-            c == '<' -> goto(51, c)
-            else -> justGo(-1)
-        }
-    }
-
-    /**
-     * STATE 50
-     * Operator &<< OR <<
-     * &<< OR << in buffer
-     */
-    private fun leftLeft(c: Char) {
-        when {
-            c == '=' -> {
-                operatorIfOk(c)
-            }
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-    /**
-     * STATE 51
-     * Operator &>> OR >>
-     * &>> OR >> in buffer
-     */
-    private fun rightRight(c: Char) {
-        when {
-            c == '=' -> goto(55, c)
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 53
-//     * Operator &<<= OR <<=
-//     * &<<= OR <<= in buffer
-//     */
-//    private fun leftLeftEquals(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-//    /**
-//     * STATE 54
-//     * Operator &>>= OR >>=
-//     * &>>= OR >>= in buffer
-//     */
-//    private fun rightRightEquals(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-    /**
-     * STATE 55
-     * Operator >
-     * > in buffer
-     */
-    private fun right(c: Char) {
-        when {
-            c == '>' -> goto(50, c)
-            c == '=' -> {
-                operatorIfOk(c)
-            }
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-    /**
-     * STATE 56
-     * Operator <
-     * < in buffer
-     */
-    private fun left(c: Char) {
-        when {
-            c == '>' -> goto(50, c)
-            c == '=' -> {
-                operatorIfOk(c)
-            }
-            isRegular(c) -> {
-                reader.stepBack()
-                buffer.setLength(buffer.length - 1)
-                addToken(Token.Type.OPERATOR)
-            }
-            else -> justGo(-1)
-        }
-    }
-
-//    /**
-//     * STATE 58
-//     * Operator >=
-//     * >= in buffer
-//     */
-//    private fun rightEquals(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-//    /**
-//     * STATE 59
-//     * Operator <=
-//     * <= in buffer
-//     */
-//    private fun leftEquals(c: Char) {
-//        operatorIfOk(c)
-//    }
-
-
 }
