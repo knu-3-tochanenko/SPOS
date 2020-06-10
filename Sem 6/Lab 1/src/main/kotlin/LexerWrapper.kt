@@ -1,3 +1,4 @@
+import Token.Type.*
 import java.io.File
 
 class LexerWrapper(
@@ -8,17 +9,17 @@ class LexerWrapper(
 
         for (token in tokens) {
             when (token.type) {
-                Token.Type.ERROR -> print(token.string.red())
-                Token.Type.COMMENT -> print(token.string.green())
-                Token.Type.LITERAL_CHAR,
-                Token.Type.LITERAL_BOOLEAN,
-                Token.Type.LITERAL_FLOAT,
-                Token.Type.LITERAL_INT,
-                Token.Type.LITERAL_NULL,
-                Token.Type.LITERAL_STRING -> print(token.string.cyan())
-                Token.Type.KEYWORD, Token.Type.PRIMITIVE, Token.Type.DIRECTIVE -> print(token.string.purple())
-                Token.Type.OPERATOR -> print(token.string.blue())
-                Token.Type.SEPARATOR -> print(token.string.white())
+                ERROR -> print(token.string.red())
+                COMMENT -> print(token.string.green())
+                LITERAL_CHAR,
+                LITERAL_BOOLEAN,
+                LITERAL_FLOAT,
+                LITERAL_INT,
+                LITERAL_NULL,
+                LITERAL_STRING -> print(token.string.cyan())
+                KEYWORD, PRIMITIVE, DIRECTIVE, INSTRUCTION -> print(token.string.purple())
+                OPERATOR -> print(token.string.blue())
+                SEPARATOR -> print(token.string.white())
                 else -> print(token.string)
             }
 
@@ -30,17 +31,17 @@ class LexerWrapper(
 
         for (token in tokens) {
             when (token.type) {
-                Token.Type.ERROR -> print("[${token.string.red()}]")
-                Token.Type.COMMENT -> print("[${token.string.green()}]")
-                Token.Type.LITERAL_CHAR,
-                Token.Type.LITERAL_BOOLEAN,
-                Token.Type.LITERAL_FLOAT,
-                Token.Type.LITERAL_INT,
-                Token.Type.LITERAL_NULL,
-                Token.Type.LITERAL_STRING -> print("[${token.string.cyan()}]")
-                Token.Type.KEYWORD, Token.Type.PRIMITIVE, Token.Type.DIRECTIVE -> print("[${token.string.purple()}]")
-                Token.Type.OPERATOR -> print("[${token.string.blue()}]")
-                Token.Type.SEPARATOR -> print("[${token.string.white()}]")
+                ERROR -> print("[${token.string.red()}]")
+                COMMENT -> print("[${token.string.green()}]")
+                LITERAL_CHAR,
+                LITERAL_BOOLEAN,
+                LITERAL_FLOAT,
+                LITERAL_INT,
+                LITERAL_NULL,
+                LITERAL_STRING -> print("[${token.string.cyan()}]")
+                KEYWORD, PRIMITIVE, DIRECTIVE, INSTRUCTION -> print("[${token.string.purple()}]")
+                OPERATOR -> print("[${token.string.blue()}]")
+                SEPARATOR -> print("[${token.string.white()}]")
                 else -> print("[${token.string}]")
             }
 
@@ -50,7 +51,7 @@ class LexerWrapper(
     fun printTokens() {
         println("PRINT ALL TOKENS ----------------------------------------------------------------".green())
         for (token in tokens)
-            if (token.type != Token.Type.WHITESPACE) println(token)
+            if (token.type != WHITESPACE) println(token)
     }
 
     fun printSorted() {
@@ -58,7 +59,7 @@ class LexerWrapper(
         val sorted = tokens.toMutableList()
         sorted.sortBy { it.type }
         for (token in sorted)
-            if (token.type != Token.Type.WHITESPACE) println(token)
+            if (token.type != WHITESPACE) println(token)
     }
 
     private val header = """<!DOCTYPE html>

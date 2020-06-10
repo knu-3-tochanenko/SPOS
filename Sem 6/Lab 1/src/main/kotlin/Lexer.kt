@@ -61,6 +61,7 @@ class Lexer(fileName: String) {
                 25 -> state25(c)
                 26 -> state26(c)
                 27 -> state27(c)
+                28 -> state28(c)
                 29 -> state29(c)
                 30 -> state30(c)
                 31 -> state31(c)
@@ -120,6 +121,7 @@ class Lexer(fileName: String) {
             c == '<' -> goto(18)
             c == '.' -> goto(23)
             c == '\'' -> goto(25)
+            c == '@' -> goto(28)
             c == '"' -> goto(29)
             c == '#' -> goto(38)
             c == '0' -> goto(49)
@@ -345,6 +347,16 @@ class Lexer(fileName: String) {
         when {
             isNewLine(c) || c == '\\' -> stepBackAndAddToken(ERROR)
             else -> goto(26)
+        }
+    }
+
+    private fun state28(c: Char) {
+        when {
+            isWhitespace(c) || isSeparator(c) || isOperator(c) -> {
+                stepBackAndAddToken(INSTRUCTION)
+            }
+            isValidChar(c) -> goto(28)
+            else -> stepBackAndAddToken(ERROR)
         }
     }
     

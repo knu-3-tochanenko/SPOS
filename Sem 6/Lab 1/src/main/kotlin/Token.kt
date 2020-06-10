@@ -13,6 +13,7 @@ data class Token(
         DIRECTIVE,
         WHITESPACE,
         IDENTIFIER,
+        INSTRUCTION,
         LITERAL_INT,
         LITERAL_CHAR,
         LITERAL_FLOAT,

@@ -4,11 +4,11 @@ fun main() {
 
     val wrapper = LexerWrapper(lexer.tokens)
 
-//    wrapper.printToConsoleWrapped()
-//    wrapper.printToConsole()
+    wrapper.printToConsoleWrapped()
+    wrapper.printToConsole()
 
     wrapper.generateHtml()
 
-//    wrapper.printTokens()
-//    wrapper.printSorted()
+    wrapper.printTokens()
+    wrapper.printSorted()
 }

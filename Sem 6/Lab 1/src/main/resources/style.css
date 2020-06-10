@@ -12,7 +12,7 @@ body {
     color: #F44336;
 }
 
-.keyword, .directive {
+.keyword, .directive, .instruction {
     color: #E040FB;
 }
 
